@@ -38,13 +38,17 @@ export default defineNuxtConfig({
     presets: [{ from: 'vue-i18n', imports: ['useI18n'] }],
   },
   // Equivalente ao server.proxy do vite.config.ts original: em dev, /api/*
-  // é encaminhado pro backend Fastify (pep-main/apps/api, :8000), mantendo
-  // front e back na mesma origem do ponto de vista do navegador — evita o
-  // problema de cookie cross-origin registrado na spec (seção 7).
+  // é encaminhado pro backend, mantendo front e back na mesma origem do
+  // ponto de vista do navegador — evita o problema de cookie cross-origin
+  // registrado na spec (seção 7). Alvo configurável via API_TARGET, com
+  // default no backend Python (python-back-coepp, :8001) — decisão do
+  // usuário de não usar mais o Fastify (pep-main/apps/api, :8000) no dia
+  // a dia; a variável continua existindo só pra permitir comparar os dois
+  // pontualmente, se precisar.
   devServer: { port: 3000 },
   nitro: {
     devProxy: {
-      '/api': { target: 'http://localhost:8000/api', changeOrigin: true },
+      '/api': { target: `${process.env.API_TARGET ?? 'http://localhost:8001'}/api`, changeOrigin: true },
     },
   },
 })

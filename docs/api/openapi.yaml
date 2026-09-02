@@ -1,0 +1,2329 @@
+openapi: 3.0.3
+info:
+  title: PEP API — Clínica-Escola de Psicologia
+  description: Prontuário Eletrônico do Paciente. Contrato gerado a partir das
+    rotas (schema-first).
+  version: 0.1.0
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas: {}
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      tags:
+        - health
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ok
+  /ready:
+    get:
+      summary: Readiness probe (checa banco de dados)
+      tags:
+        - health
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ready
+        "503":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: string
+  /version:
+    get:
+      summary: Build version
+      tags:
+        - health
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - version
+                properties:
+                  version:
+                    type: string
+  /api/auth/login:
+    post:
+      summary: Autentica e inicia sessão
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              additionalProperties: false
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - accessToken
+                  - user
+                properties:
+                  accessToken:
+                    type: string
+                  user:
+                    type: object
+                    required:
+                      - id
+                      - email
+                      - fullName
+                      - role
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                        format: email
+                      fullName:
+                        type: string
+                      role:
+                        type: string
+                        enum:
+                          - PATIENT
+                          - INTERN
+                          - SUPERVISOR
+                          - ADMIN
+                      profileComplete:
+                        type: boolean
+  /api/auth/intern-login:
+    post:
+      summary: Login do estagiário via TOTVS RM (usuário/senha institucionais)
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - usuarioRm
+                - senhaRm
+              additionalProperties: false
+              properties:
+                usuarioRm:
+                  type: string
+                  pattern: ^\d{11}$
+                senhaRm:
+                  type: string
+                  minLength: 1
+                  maxLength: 128
+                linkEmail:
+                  type: string
+                  format: email
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - accessToken
+                  - user
+                properties:
+                  accessToken:
+                    type: string
+                  user:
+                    type: object
+                    required:
+                      - id
+                      - email
+                      - fullName
+                      - role
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                        format: email
+                      fullName:
+                        type: string
+                      role:
+                        type: string
+                        enum:
+                          - PATIENT
+                          - INTERN
+                          - SUPERVISOR
+                          - ADMIN
+                      profileComplete:
+                        type: boolean
+  /api/auth/patient-login:
+    post:
+      summary: Login do paciente por CPF + data de nascimento (sem senha)
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cpf
+                - birthDate
+              additionalProperties: false
+              properties:
+                cpf:
+                  type: string
+                birthDate:
+                  type: string
+                  format: date
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - accessToken
+                  - user
+                properties:
+                  accessToken:
+                    type: string
+                  user:
+                    type: object
+                    required:
+                      - id
+                      - email
+                      - fullName
+                      - role
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                        format: email
+                      fullName:
+                        type: string
+                      role:
+                        type: string
+                        enum:
+                          - PATIENT
+                          - INTERN
+                          - SUPERVISOR
+                          - ADMIN
+                      profileComplete:
+                        type: boolean
+  /api/auth/refresh:
+    post:
+      summary: Renova o access token (rotaciona o refresh)
+      tags:
+        - auth
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - accessToken
+                properties:
+                  accessToken:
+                    type: string
+  /api/auth/logout:
+    post:
+      summary: Encerra a sessão
+      tags:
+        - auth
+      responses:
+        "204":
+          description: Default Response
+  /api/auth/me:
+    get:
+      summary: Dados do usuário autenticado
+      tags:
+        - auth
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - email
+                  - fullName
+                  - role
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                    format: email
+                  fullName:
+                    type: string
+                  role:
+                    type: string
+                    enum:
+                      - PATIENT
+                      - INTERN
+                      - SUPERVISOR
+                      - ADMIN
+                  profileComplete:
+                    type: boolean
+  /api/users:
+    post:
+      summary: Cadastra aluno/estagiário ou supervisor (Administrativo)
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - role
+                - fullName
+                - email
+                - password
+              additionalProperties: false
+              properties:
+                role:
+                  type: string
+                  enum:
+                    - INTERN
+                    - SUPERVISOR
+                    - ADMIN
+                fullName:
+                  type: string
+                  minLength: 2
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                crp:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^\d{2}/\d{4,6}$
+                ra:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^\d{6}$
+                phone:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^\(\d{2}\) \d{4,5}-\d{4}$
+                department:
+                  type:
+                    - string
+                    - "null"
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - fullName
+                  - email
+                  - role
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  fullName:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                    enum:
+                      - PATIENT
+                      - INTERN
+                      - SUPERVISOR
+                      - ADMIN
+                  crp:
+                    type:
+                      - "null"
+                      - string
+                  ra:
+                    type:
+                      - "null"
+                      - string
+                  phone:
+                    type:
+                      - "null"
+                      - string
+                  department:
+                    type:
+                      - "null"
+                      - string
+                  active:
+                    type: boolean
+    get:
+      summary: Lista usuários por papel (seletores de coautor/agendamento)
+      tags:
+        - users
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - PATIENT
+              - INTERN
+              - SUPERVISOR
+              - ADMIN
+          in: query
+          name: role
+          required: false
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - fullName
+                    - email
+                    - role
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    fullName:
+                      type: string
+                    email:
+                      type: string
+                    role:
+                      type: string
+                      enum:
+                        - PATIENT
+                        - INTERN
+                        - SUPERVISOR
+                        - ADMIN
+                    crp:
+                      type:
+                        - "null"
+                        - string
+                    ra:
+                      type:
+                        - "null"
+                        - string
+                    phone:
+                      type:
+                        - "null"
+                        - string
+                    department:
+                      type:
+                        - "null"
+                        - string
+                    active:
+                      type: boolean
+  /api/users/pending-supervisors:
+    get:
+      summary: Lista estagiários com supervisor pendente (opção "Outro" no autocadastro)
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    fullName:
+                      type: string
+                    email:
+                      type: string
+                    pendingSupervisorName:
+                      type: string
+  /api/users/{id}/link-supervisor:
+    patch:
+      summary: Vincula um estagiário pendente a um supervisor cadastrado
+        (Administrativo)
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - supervisorId
+              additionalProperties: false
+              properties:
+                supervisorId:
+                  type: string
+                  format: uuid
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Default Response
+  /api/appointments:
+    post:
+      summary: Agenda uma sessão (Administrativo)
+      tags:
+        - appointments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - patientId
+                - internId
+                - scheduledAt
+              additionalProperties: false
+              properties:
+                patientId:
+                  type: string
+                  format: uuid
+                internId:
+                  type: string
+                  format: uuid
+                scheduledAt:
+                  type: string
+                  format: date-time
+                notes:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 2000
+                roomId:
+                  type:
+                    - string
+                    - "null"
+                  format: uuid
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - patientId
+                  - internId
+                  - scheduledAt
+                  - status
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  patientId:
+                    type: string
+                    format: uuid
+                  internId:
+                    type: string
+                    format: uuid
+                  scheduledAt:
+                    type: string
+                    format: date-time
+                  status:
+                    type: string
+                    enum:
+                      - SCHEDULED
+                      - ATTENDED
+                      - NO_SHOW
+                      - CANCELLED
+                  notes:
+                    type:
+                      - "null"
+                      - string
+                  roomId:
+                    type:
+                      - "null"
+                      - string
+                    format: uuid
+                  roomName:
+                    type:
+                      - "null"
+                      - string
+    get:
+      summary: Lista a agenda visível ao usuário (escopo por papel/vínculo via RLS)
+      tags:
+        - appointments
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - patientId
+                    - internId
+                    - scheduledAt
+                    - status
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    patientId:
+                      type: string
+                      format: uuid
+                    internId:
+                      type: string
+                      format: uuid
+                    scheduledAt:
+                      type: string
+                      format: date-time
+                    status:
+                      type: string
+                      enum:
+                        - SCHEDULED
+                        - ATTENDED
+                        - NO_SHOW
+                        - CANCELLED
+                    notes:
+                      type:
+                        - "null"
+                        - string
+                    roomId:
+                      type:
+                        - "null"
+                        - string
+                      format: uuid
+                    roomName:
+                      type:
+                        - "null"
+                        - string
+  /api/appointments/{id}/attendance:
+    patch:
+      summary: Registra presença/falta de uma sessão
+      tags:
+        - appointments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - outcome
+              additionalProperties: false
+              properties:
+                outcome:
+                  type: string
+                  enum:
+                    - ATTENDED
+                    - NO_SHOW
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - patientId
+                  - internId
+                  - scheduledAt
+                  - status
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  patientId:
+                    type: string
+                    format: uuid
+                  internId:
+                    type: string
+                    format: uuid
+                  scheduledAt:
+                    type: string
+                    format: date-time
+                  status:
+                    type: string
+                    enum:
+                      - SCHEDULED
+                      - ATTENDED
+                      - NO_SHOW
+                      - CANCELLED
+                  notes:
+                    type:
+                      - "null"
+                      - string
+                  roomId:
+                    type:
+                      - "null"
+                      - string
+                    format: uuid
+                  roomName:
+                    type:
+                      - "null"
+                      - string
+  /api/screenings:
+    post:
+      summary: Cria uma triagem (rascunho) — Estagiário
+      tags:
+        - screening
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - patientId
+              additionalProperties: false
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - SCREENING_ADULT
+                    - SCREENING_CHILD
+                patientId:
+                  type: string
+                  format: uuid
+                coAuthorIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                content:
+                  type: object
+                  additionalProperties: true
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - type
+                  - status
+                  - version
+                  - patientId
+                  - authorId
+                  - content
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  numero:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type: string
+                    enum:
+                      - SCREENING_ADULT
+                      - SCREENING_CHILD
+                  status:
+                    type: string
+                  version:
+                    type: integer
+                  patientId:
+                    type: string
+                    format: uuid
+                  authorId:
+                    type: string
+                    format: uuid
+                  coAuthorIds:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+                  content:
+                    type: object
+                    additionalProperties: true
+                  signatures:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        signerName:
+                          type: string
+                        signerRole:
+                          type: string
+                        signerRef:
+                          type:
+                            - "null"
+                            - string
+                        provider:
+                          type: string
+                        signedAt:
+                          type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+    get:
+      summary: Lista triagens visíveis (escopo por RLS)
+      tags:
+        - screening
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - type
+                    - status
+                    - version
+                    - patientId
+                    - authorId
+                    - content
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    numero:
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      type: string
+                      enum:
+                        - SCREENING_ADULT
+                        - SCREENING_CHILD
+                    status:
+                      type: string
+                    version:
+                      type: integer
+                    patientId:
+                      type: string
+                      format: uuid
+                    authorId:
+                      type: string
+                      format: uuid
+                    coAuthorIds:
+                      type: array
+                      items:
+                        type: string
+                        format: uuid
+                    content:
+                      type: object
+                      additionalProperties: true
+                    signatures:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          signerName:
+                            type: string
+                          signerRole:
+                            type: string
+                          signerRef:
+                            type:
+                              - "null"
+                              - string
+                          provider:
+                            type: string
+                          signedAt:
+                            type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+  /api/screenings/{id}:
+    get:
+      summary: Obtém uma triagem (leitura auditada)
+      tags:
+        - screening
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - type
+                  - status
+                  - version
+                  - patientId
+                  - authorId
+                  - content
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  numero:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type: string
+                    enum:
+                      - SCREENING_ADULT
+                      - SCREENING_CHILD
+                  status:
+                    type: string
+                  version:
+                    type: integer
+                  patientId:
+                    type: string
+                    format: uuid
+                  authorId:
+                    type: string
+                    format: uuid
+                  coAuthorIds:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+                  content:
+                    type: object
+                    additionalProperties: true
+                  signatures:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        signerName:
+                          type: string
+                        signerRole:
+                          type: string
+                        signerRef:
+                          type:
+                            - "null"
+                            - string
+                        provider:
+                          type: string
+                        signedAt:
+                          type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+    patch:
+      summary: Salva o rascunho da triagem (auto-save) — Estagiário
+      tags:
+        - screening
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+                - expectedVersion
+              additionalProperties: false
+              properties:
+                content:
+                  type: object
+                  additionalProperties: true
+                expectedVersion:
+                  type: integer
+                  minimum: 1
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - type
+                  - status
+                  - version
+                  - patientId
+                  - authorId
+                  - content
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  numero:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type: string
+                    enum:
+                      - SCREENING_ADULT
+                      - SCREENING_CHILD
+                  status:
+                    type: string
+                  version:
+                    type: integer
+                  patientId:
+                    type: string
+                    format: uuid
+                  authorId:
+                    type: string
+                    format: uuid
+                  coAuthorIds:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+                  content:
+                    type: object
+                    additionalProperties: true
+                  signatures:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        signerName:
+                          type: string
+                        signerRole:
+                          type: string
+                        signerRef:
+                          type:
+                            - "null"
+                            - string
+                        provider:
+                          type: string
+                        signedAt:
+                          type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+    delete:
+      summary: Remove um documento — só RASCUNHO próprio/coautoria (ADMIN remove
+        qualquer status)
+      tags:
+        - screening
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Default Response
+  /api/patients:
+    get:
+      summary: Lista pacientes vinculados ao usuário (nome descriptografado)
+      tags:
+        - patients
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - code
+                    - fullName
+                    - hasDisability
+                    - disabilities
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    code:
+                      type: string
+                    fullName:
+                      type: string
+                    birthDate:
+                      type:
+                        - "null"
+                        - string
+                    isMinor:
+                      type: boolean
+                    hasDisability:
+                      type: boolean
+                    disabilities:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                              - FISICA
+                              - VISUAL
+                              - AUDITIVA
+                              - INTELECTUAL
+                              - PSICOSSOCIAL
+                              - MULTIPLA
+                              - OUTRA
+                          otherText:
+                            type:
+                              - "null"
+                              - string
+    post:
+      summary: Cadastra um paciente (Administrativo). Responsável obrigatório se menor.
+      tags:
+        - patients
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fullName
+              additionalProperties: false
+              properties:
+                fullName:
+                  type: string
+                  minLength: 2
+                cpf:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^\d{3}\.\d{3}\.\d{3}-\d{2}$
+                birthDate:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+                phone:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^\(\d{2}\) \d{4,5}-\d{4}$
+                guardian:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: false
+                  properties:
+                    name:
+                      type: string
+                    cpf:
+                      type:
+                        - string
+                        - "null"
+                      pattern: ^\d{3}\.\d{3}\.\d{3}-\d{2}$
+                    relationship:
+                      type:
+                        - string
+                        - "null"
+                    phone:
+                      type:
+                        - string
+                        - "null"
+                      pattern: ^\(\d{2}\) \d{4,5}-\d{4}$
+                hasDisability:
+                  type: boolean
+                  default: false
+                disabilityTypes:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - FISICA
+                      - VISUAL
+                      - AUDITIVA
+                      - INTELECTUAL
+                      - PSICOSSOCIAL
+                      - MULTIPLA
+                      - OUTRA
+                disabilityOtherText:
+                  type:
+                    - string
+                    - "null"
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - code
+                  - fullName
+                  - hasDisability
+                  - disabilities
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  code:
+                    type: string
+                  fullName:
+                    type: string
+                  birthDate:
+                    type:
+                      - "null"
+                      - string
+                  isMinor:
+                    type: boolean
+                  hasDisability:
+                    type: boolean
+                  disabilities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum:
+                            - FISICA
+                            - VISUAL
+                            - AUDITIVA
+                            - INTELECTUAL
+                            - PSICOSSOCIAL
+                            - MULTIPLA
+                            - OUTRA
+                        otherText:
+                          type:
+                            - "null"
+                            - string
+  /api/portal/me:
+    get:
+      summary: "Portal do paciente: suas consultas e horários pendentes"
+      tags:
+        - patients
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  fullName:
+                    type: string
+                  appointments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        scheduledAt:
+                          type: string
+                        status:
+                          type: string
+                        internName:
+                          type: string
+                  pendingSlots:
+                    type: array
+                    items:
+                      type: string
+  /api/register/patient:
+    post:
+      summary: Autocadastro público de paciente (dados + login + disponibilidade)
+      tags:
+        - enrollment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fullName
+                - email
+                - cpf
+                - birthDate
+                - windows
+              additionalProperties: false
+              properties:
+                fullName:
+                  type: string
+                  minLength: 2
+                email:
+                  type: string
+                  format: email
+                cpf:
+                  type: string
+                  pattern: ^\d{3}\.\d{3}\.\d{3}-\d{2}$
+                birthDate:
+                  type: string
+                  format: date
+                phone:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^\(\d{2}\) \d{4,5}-\d{4}$
+                guardian:
+                  type:
+                    - object
+                    - "null"
+                  additionalProperties: false
+                  properties:
+                    name:
+                      type: string
+                    cpf:
+                      type:
+                        - string
+                        - "null"
+                      pattern: ^\d{3}\.\d{3}\.\d{3}-\d{2}$
+                    relationship:
+                      type:
+                        - string
+                        - "null"
+                    phone:
+                      type:
+                        - string
+                        - "null"
+                      pattern: ^\(\d{2}\) \d{4,5}-\d{4}$
+                windows:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - weekday
+                      - startTime
+                      - endTime
+                    additionalProperties: false
+                    properties:
+                      weekday:
+                        type: integer
+                        minimum: 0
+                        maximum: 6
+                      startTime:
+                        type: string
+                        pattern: ^([01]\d|2[0-3]):([0-5]\d)$
+                      endTime:
+                        type: string
+                        pattern: ^([01]\d|2[0-3]):([0-5]\d)$
+                hasDisability:
+                  type: boolean
+                  default: false
+                disabilityTypes:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - FISICA
+                      - VISUAL
+                      - AUDITIVA
+                      - INTELECTUAL
+                      - PSICOSSOCIAL
+                      - MULTIPLA
+                      - OUTRA
+                disabilityOtherText:
+                  type:
+                    - string
+                    - "null"
+      responses:
+        "201":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - code
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  code:
+                    type: string
+  /api/register/student:
+    post:
+      summary: Autocadastro público de aluno/estagiário (dados + disponibilidade)
+      tags:
+        - enrollment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fullName
+                - email
+                - ra
+                - password
+                - disciplinaId
+                - windows
+                - acceptedTermVersion
+              additionalProperties: false
+              properties:
+                fullName:
+                  type: string
+                  minLength: 2
+                email:
+                  type: string
+                  format: email
+                ra:
+                  type: string
+                  pattern: ^\d{6}$
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                phone:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^\(\d{2}\) \d{4,5}-\d{4}$
+                academicSupervisorId:
+                  type:
+                    - string
+                    - "null"
+                  format: uuid
+                pendingSupervisorName:
+                  type:
+                    - string
+                    - "null"
+                  minLength: 1
+                disciplinaId:
+                  type: string
+                  format: uuid
+                periodo:
+                  type:
+                    - string
+                    - "null"
+                turma:
+                  type:
+                    - string
+                    - "null"
+                windows:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - weekday
+                      - startTime
+                      - endTime
+                    additionalProperties: false
+                    properties:
+                      weekday:
+                        type: integer
+                        minimum: 0
+                        maximum: 6
+                      startTime:
+                        type: string
+                        pattern: ^([01]\d|2[0-3]):([0-5]\d)$
+                      endTime:
+                        type: string
+                        pattern: ^([01]\d|2[0-3]):([0-5]\d)$
+                acceptedTermVersion:
+                  type: string
+                  minLength: 1
+      responses:
+        "201":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+  /api/register/options:
+    get:
+      summary: Opções para o autocadastro de aluno (supervisores + disciplinas)
+      tags:
+        - enrollment
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  supervisors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        fullName:
+                          type: string
+                  disciplinas:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+  /api/register/responsibility-term:
+    get:
+      summary: Termo de responsabilidade vigente (versão + conteúdo), exibido no
+        cadastro do aluno
+      tags:
+        - enrollment
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - version
+                  - content
+                properties:
+                  version:
+                    type: string
+                  content:
+                    type: string
+  /api/enrollment/complete-profile:
+    patch:
+      summary: Completa o cadastro do estagiário autenticado (1º acesso via TOTVS ou
+        enquanto perfil incompleto)
+      tags:
+        - enrollment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - disciplinaId
+                - windows
+                - acceptedTermVersion
+              additionalProperties: false
+              properties:
+                academicSupervisorId:
+                  type:
+                    - string
+                    - "null"
+                  format: uuid
+                pendingSupervisorName:
+                  type:
+                    - string
+                    - "null"
+                  minLength: 1
+                disciplinaId:
+                  type: string
+                  format: uuid
+                periodo:
+                  type:
+                    - string
+                    - "null"
+                turma:
+                  type:
+                    - string
+                    - "null"
+                windows:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - weekday
+                      - startTime
+                      - endTime
+                    additionalProperties: false
+                    properties:
+                      weekday:
+                        type: integer
+                        minimum: 0
+                        maximum: 6
+                      startTime:
+                        type: string
+                        pattern: ^([01]\d|2[0-3]):([0-5]\d)$
+                      endTime:
+                        type: string
+                        pattern: ^([01]\d|2[0-3]):([0-5]\d)$
+                acceptedTermVersion:
+                  type: string
+                  minLength: 1
+                ra:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^\d{6}$
+                phone:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^\(\d{2}\) \d{4,5}-\d{4}$
+                email:
+                  type:
+                    - string
+                    - "null"
+                  format: email
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Default Response
+  /api/enrollment/availability-windows:
+    get:
+      summary: Disponibilidade recorrente atual do estagiário logado
+      tags:
+        - enrollment
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - weekday
+                    - startTime
+                    - endTime
+                  additionalProperties: false
+                  properties:
+                    weekday:
+                      type: integer
+                      minimum: 0
+                      maximum: 6
+                    startTime:
+                      type: string
+                      pattern: ^([01]\d|2[0-3]):([0-5]\d)$
+                    endTime:
+                      type: string
+                      pattern: ^([01]\d|2[0-3]):([0-5]\d)$
+    put:
+      summary: Substitui a disponibilidade recorrente do estagiário logado — editável
+        a qualquer momento do semestre
+      tags:
+        - enrollment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - windows
+              additionalProperties: false
+              properties:
+                windows:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - weekday
+                      - startTime
+                      - endTime
+                    additionalProperties: false
+                    properties:
+                      weekday:
+                        type: integer
+                        minimum: 0
+                        maximum: 6
+                      startTime:
+                        type: string
+                        pattern: ^([01]\d|2[0-3]):([0-5]\d)$
+                      endTime:
+                        type: string
+                        pattern: ^([01]\d|2[0-3]):([0-5]\d)$
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Default Response
+  /api/matching/run:
+    post:
+      summary: Executa o pareamento por disponibilidade (Administrativo)
+      tags:
+        - matching
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - matched
+                  - results
+                properties:
+                  matched:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        appointmentId:
+                          type: string
+                        internId:
+                          type: string
+                        patientId:
+                          type: string
+                        roomId:
+                          type: string
+                        scheduledAt:
+                          type: string
+  /api/matching/matches:
+    get:
+      summary: Lista as consultas/pareamentos (Admin e Supervisor)
+      tags:
+        - matching
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    appointmentId:
+                      type: string
+                    scheduledAt:
+                      type: string
+                    status:
+                      type: string
+                    internName:
+                      type: string
+                    patientName:
+                      type: string
+                    roomName:
+                      type:
+                        - "null"
+                        - string
+  /api/matching/suggestions:
+    get:
+      summary: Pares que o pareamento automático formaria, sem persistir
+        (Administrativo)
+      tags:
+        - matching
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    patientId:
+                      type: string
+                    patientName:
+                      type: string
+                    internId:
+                      type: string
+                    internName:
+                      type: string
+                    roomId:
+                      type: string
+                    roomName:
+                      type: string
+                    scheduledAt:
+                      type: string
+  /api/matching/pending-requests:
+    get:
+      summary: Alertas de fallback por aproximação — pacientes sem match exato nesta
+        rodada (Administrativo)
+      tags:
+        - matching
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    patientName:
+                      type: string
+                    suggestedInternName:
+                      type:
+                        - "null"
+                        - string
+                    suggestedAt:
+                      type:
+                        - "null"
+                        - string
+                    status:
+                      type: string
+                    createdAt:
+                      type: string
+  /api/matching/pending-requests/{id}/resolve:
+    patch:
+      summary: Marca o alerta de fallback como resolvido — equipe já contatou o
+        paciente (Administrativo)
+      tags:
+        - matching
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Default Response
+  /api/matching/manual:
+    post:
+      summary: Cria um match manual, sobrepondo a sugestão automática (Administrativo)
+      tags:
+        - matching
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - patientId
+                - internId
+                - scheduledAt
+              additionalProperties: false
+              properties:
+                patientId:
+                  type: string
+                  format: uuid
+                internId:
+                  type: string
+                  format: uuid
+                scheduledAt:
+                  type: string
+                  format: date-time
+                roomId:
+                  type:
+                    - string
+                    - "null"
+                  format: uuid
+                acknowledgeWarnings:
+                  type: boolean
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - appointmentId
+                  - warnings
+                properties:
+                  appointmentId:
+                    type: string
+                    format: uuid
+                  warnings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - TIME_INCOMPATIBLE_PATIENT
+                            - TIME_INCOMPATIBLE_INTERN
+                            - ROOM_OCCUPIED
+                            - PATIENT_ALREADY_ASSIGNED
+                        message:
+                          type: string
+        "409":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - code
+                  - message
+                  - warnings
+                properties:
+                  code:
+                    type: string
+                  message:
+                    type: string
+                  correlation_id:
+                    type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - TIME_INCOMPATIBLE_PATIENT
+                            - TIME_INCOMPATIBLE_INTERN
+                            - ROOM_OCCUPIED
+                            - PATIENT_ALREADY_ASSIGNED
+                        message:
+                          type: string
+  /api/documents/{id}/transitions:
+    post:
+      summary: Executa uma transição no documento (submeter/aprovar/solicitar
+        ajustes/rejeitar)
+      tags:
+        - documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              additionalProperties: false
+              properties:
+                action:
+                  type: string
+                  enum:
+                    - SUBMIT
+                    - TAKE
+                    - REQUEST_CHANGES
+                    - REJECT
+                    - APPROVE
+                    - REOPEN
+                comment:
+                  type:
+                    - string
+                    - "null"
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+  /api/documents/review-queue:
+    get:
+      summary: Fila de revisão (Supervisor/Admin)
+      tags:
+        - documents
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    numero:
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      type: string
+                    status:
+                      type: string
+                    authorName:
+                      type: string
+                    patientName:
+                      type: string
+                    updatedAt:
+                      type: string
+  /api/documents/{id}/review:
+    get:
+      summary: Lê um documento para revisão (Supervisor/Admin)
+      tags:
+        - documents
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+  /api/assignments:
+    get:
+      summary: Lista vínculos (paciente↔estagiário↔supervisor) — Admin
+      tags:
+        - assignments
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    patientName:
+                      type: string
+                    internId:
+                      type: string
+                      format: uuid
+                    internName:
+                      type: string
+                    supervisorId:
+                      type:
+                        - "null"
+                        - string
+                      format: uuid
+                    supervisorName:
+                      type:
+                        - "null"
+                        - string
+                    active:
+                      type: boolean
+  /api/assignments/{id}:
+    patch:
+      summary: Altera estagiário e/ou supervisor de um vínculo já existente — Admin
+      tags:
+        - assignments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                internId:
+                  type: string
+                  format: uuid
+                supervisorId:
+                  type: string
+                  format: uuid
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Default Response
+  /api/disciplinas:
+    get:
+      summary: Lista disciplinas (Admin)
+      tags:
+        - disciplinas
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    active:
+                      type: boolean
+    post:
+      summary: Cadastra uma disciplina (Admin)
+      tags:
+        - disciplinas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              additionalProperties: false
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  active:
+                    type: boolean
+  /api/rooms:
+    get:
+      summary: Lista salas com status (ocupada/disponível) — Administrativo
+      tags:
+        - rooms
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    name:
+                      type: string
+                    active:
+                      type: boolean
+                    occupiedBy:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        appointmentId:
+                          type: string
+                          format: uuid
+                        scheduledAt:
+                          type: string
+                        patientName:
+                          type: string
+                        internName:
+                          type: string
+  /api/rooms/reassign:
+    patch:
+      summary: Troca a sala de um agendamento, validando conflito — Administrativo
+      tags:
+        - rooms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - appointmentId
+                - roomId
+              additionalProperties: false
+              properties:
+                appointmentId:
+                  type: string
+                  format: uuid
+                roomId:
+                  type: string
+                  format: uuid
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Default Response
+tags:
+  - name: health
+    description: Liveness/readiness e versão
+  - name: auth
+    description: Autenticação e sessão
+  - name: appointments
+    description: Agendamentos de sessões
+  - name: screening
+    description: Triagens (adulto e criança/adolescente)
+  - name: users
+    description: Cadastro e listagem de usuários
+  - name: patients
+    description: Pacientes (leitura escopada por vínculo)
+  - name: enrollment
+    description: Autocadastro público (paciente e aluno) + disponibilidade
+  - name: matching
+    description: Pareamento por disponibilidade de horário
+  - name: documents
+    description: Transições e revisão de documentos (máquina de estados)
+  - name: assignments
+    description: Vínculos e atribuição de supervisor
+  - name: disciplinas
+    description: Disciplinas do estágio

@@ -75,12 +75,14 @@ async function handleLogout() {
         <span v-if="user" class="text-fsa-header-muted">
           <span class="text-fsa-header-text">{{ user.fullName }}</span> · {{ ROLE_LABEL[user.role] ?? user.role }}
         </span>
-        <!-- Pedido explícito: opção de voltar ao hub de portais mesmo
-             autenticado (o React original não tinha isso — não existe
-             equivalente em AppLayout.tsx). -->
-        <NuxtLink to="/portal" class="font-medium text-fsa-header-muted hover:text-fsa-header-link hover:underline">Portal</NuxtLink>
+        <!-- Pedido explícito: um botão só (não Portal + Sair separados).
+             "Portal" agora FAZ o logout (limpa sessão + POST /auth/logout)
+             antes de ir pro hub — assim escolher outro login lá já parte de
+             sessão limpa, em vez de simplesmente navegar mantendo a sessão
+             atual (que é o que causava o "volta pro painel errado" ao tentar
+             logar como outro papel sem sair antes). -->
         <button type="button" class="font-medium text-fsa-header-link hover:underline" @click="handleLogout">
-          {{ t('nav.logout') }}
+          Portal
         </button>
       </div>
     </header>

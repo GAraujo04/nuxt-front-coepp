@@ -57,20 +57,29 @@ async function handleLogout() {
              evita depender das classes automáticas router-link-active do
              Vue Router, mantendo o mesmo esquema de cores do original. -->
         <NuxtLink v-for="link in links" :key="link.to" v-slot="{ href, navigate, isActive }" :to="link.to" custom>
-          <a :href="href ?? undefined" class="font-medium hover:text-link" :class="isActive ? 'text-link' : 'text-muted'" @click="navigate">
+          <a
+            :href="href ?? undefined"
+            class="font-medium hover:text-fsa-header-link"
+            :class="isActive ? 'text-fsa-header-link' : 'text-fsa-header-muted'"
+            @click="navigate"
+          >
             {{ t(link.labelKey) }}
           </a>
         </NuxtLink>
       </nav>
       <div class="flex items-center gap-4 text-sm">
-        <span v-if="user" class="text-muted">
-          <span class="text-body">{{ user.fullName }}</span> · {{ ROLE_LABEL[user.role] ?? user.role }}
+        <!-- text-fsa-header-*, não text-muted/text-link/text-body: este
+             header usa --fsa-superficie (fixo, claro) como fundo em
+             qualquer tema — os tokens reativos ao tema ficam ilegíveis
+             aqui quando o app está no modo escuro (ver nota no main.css). -->
+        <span v-if="user" class="text-fsa-header-muted">
+          <span class="text-fsa-header-text">{{ user.fullName }}</span> · {{ ROLE_LABEL[user.role] ?? user.role }}
         </span>
         <!-- Pedido explícito: opção de voltar ao hub de portais mesmo
              autenticado (o React original não tinha isso — não existe
              equivalente em AppLayout.tsx). -->
-        <NuxtLink to="/portal" class="font-medium text-muted hover:text-link hover:underline">Portal</NuxtLink>
-        <button type="button" class="font-medium text-link hover:underline" @click="handleLogout">
+        <NuxtLink to="/portal" class="font-medium text-fsa-header-muted hover:text-fsa-header-link hover:underline">Portal</NuxtLink>
+        <button type="button" class="font-medium text-fsa-header-link hover:underline" @click="handleLogout">
           {{ t('nav.logout') }}
         </button>
       </div>

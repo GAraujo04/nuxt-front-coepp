@@ -27,6 +27,20 @@
   --fsa-painel-escuro: var(--fsa-navy); /* painéis escuros (seção "Ferramentas") — reaproveita o navy oficial */
   --fsa-texto-claro: #ffffff;
 
+  /* Texto do header (layouts/authenticated.vue) — FIXO, não segue o tema.
+     O header usa --fsa-superficie como fundo (marca oficial, sempre clara,
+     em qualquer tema — ver comentário acima), mas --body/--muted/--link são
+     reativos ao tema da PÁGINA. Em tema escuro eles viram cores pensadas
+     pra fundo escuro (cinza claro, menta) e ficam quase ilegíveis pintados
+     num header que nunca escurece — por isso o header usa estes 3 tokens
+     fixos (mesmos valores do tema claro) em vez de --body/--muted/--link
+     diretamente. Contraste contra --fsa-superficie (#f8f8f8): cinza
+     ~13,97:1, slate ~7,14:1, navy ~12,88:1 — todos folgados acima do
+     mínimo AA (4,5:1). */
+  --fsa-header-text: var(--fsa-cinza);
+  --fsa-header-muted: #475569;
+  --fsa-header-link: var(--fsa-navy);
+
   /* Gradiente de fundo (~135°) — dois tons de navy (claro -> escuro).
      --fsa-menta NÃO entra aqui: sendo tão clara, exigiria escurecer o
      hero quase até virar navy puro pra manter o texto branco legível,
@@ -128,6 +142,9 @@
   --color-fsa-superficie: var(--fsa-superficie);
   --color-fsa-painel-escuro: var(--fsa-painel-escuro);
   --color-fsa-cinza: var(--fsa-cinza);
+  --color-fsa-header-text: var(--fsa-header-text);
+  --color-fsa-header-muted: var(--fsa-header-muted);
+  --color-fsa-header-link: var(--fsa-header-link);
 
   /* Tipografia oficial (manual da marca): Georgia pra título/heading,
      Montserrat pro corpo do texto. Georgia é fonte de sistema (sem carregar

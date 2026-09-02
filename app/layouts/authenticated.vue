@@ -66,6 +66,10 @@ async function handleLogout() {
         <span v-if="user" class="text-muted">
           <span class="text-body">{{ user.fullName }}</span> · {{ ROLE_LABEL[user.role] ?? user.role }}
         </span>
+        <!-- Pedido explícito: opção de voltar ao hub de portais mesmo
+             autenticado (o React original não tinha isso — não existe
+             equivalente em AppLayout.tsx). -->
+        <NuxtLink to="/portal" class="font-medium text-muted hover:text-link hover:underline">Portal</NuxtLink>
         <button type="button" class="font-medium text-link hover:underline" @click="handleLogout">
           {{ t('nav.logout') }}
         </button>

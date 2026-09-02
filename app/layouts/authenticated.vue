@@ -50,7 +50,9 @@ async function handleLogout() {
 <template>
   <div class="fsa-hero-bg min-h-screen">
     <header class="sticky top-0 z-10 flex items-center justify-between gap-4 bg-fsa-superficie px-6 py-3 shadow-sm">
-      <NuxtLink to="/" class="font-semibold text-fsa-navy-marca hover:opacity-80">{{ t('app.name') }}</NuxtLink>
+      <NuxtLink to="/" class="shrink-0 hover:opacity-80">
+        <img src="/logo-fsa-horizontal.png" :alt="t('app.name')" class="h-8 w-auto">
+      </NuxtLink>
       <nav aria-label="Navegação principal" class="flex flex-1 items-center gap-5 text-sm">
         <!-- `custom` + v-slot dá acesso a isActive, igual ao className de
              função do NavLink no React (navLinkClass em AppLayout.tsx) —

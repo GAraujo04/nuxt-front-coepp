@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { isAxiosError } from 'axios';
 import { useAuth } from '../composables/useAuth';
 import { useInternLogin } from '../composables/useInternLogin';
 import { maskUsuarioRm } from '../shared/lib/masks';
+import { apiErrorCode } from '../shared/api/error-code';
 
-type ErrorKind = 'invalid' | 'forbidden' | 'unavailable' | null;
+type ErrorKind = 'invalid' | 'forbidden' | 'unavailable' | 'rate-limited' | null;
 
 function errorKindFrom(error: unknown): ErrorKind {
-  if (!isAxiosError<{ code?: string }>(error)) return null;
-  const code = error.response?.data?.code;
+  const code = apiErrorCode(error);
+  if (code === null) return null;
   if (code === 'forbidden') return 'forbidden';
   if (code === 'service_unavailable') return 'unavailable';
+  if (code === 'rate_limited') return 'rate-limited';
   // unauthorized (credencial inválida) e validation_failed (formato/vínculo) usam a mesma mensagem genérica.
   return 'invalid';
 }
@@ -92,6 +93,9 @@ async function onSubmit() {
         <p v-if="errorKind === 'invalid'" class="pill-danger rounded px-2 py-1 text-sm">Usuário ou senha inválidos.</p>
         <p v-else-if="errorKind === 'forbidden'" class="pill-muted rounded px-2 py-1 text-sm">
           Este login é exclusivo para alunos/estagiários. Se você é funcionário ou professor, procure o Administrativo.
+        </p>
+        <p v-else-if="errorKind === 'rate-limited'" class="pill-muted rounded px-2 py-1 text-sm">
+          Muitas tentativas. Aguarde alguns minutos e tente novamente.
         </p>
         <p v-else-if="errorKind === 'unavailable'" class="pill-info rounded px-2 py-1 text-sm">
           O sistema de autenticação da instituição está indisponível no momento. Tente novamente em alguns minutos.

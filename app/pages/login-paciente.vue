@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from '../composables/useAuth';
 import { usePatientLogin } from '../composables/usePatientLogin';
+import { isRateLimited } from '../shared/api/error-code';
 import { maskCPF } from '../shared/lib/masks';
 
 const { isAuthenticated } = useAuth();
@@ -44,7 +45,8 @@ async function onSubmit() {
             required
           >
         </div>
-        <p v-if="login.isError.value" class="text-sm text-danger">CPF ou data de nascimento inválidos.</p>
+        <p v-if="isRateLimited(login.error.value)" class="text-sm text-danger">Muitas tentativas. Aguarde alguns minutos e tente novamente.</p>
+        <p v-else-if="login.isError.value" class="text-sm text-danger">CPF ou data de nascimento inválidos.</p>
         <button
           type="submit"
           :disabled="login.isPending.value"

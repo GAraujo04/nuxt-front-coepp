@@ -2,6 +2,7 @@
 import { z } from 'zod';
 import { useAuth } from '../composables/useAuth';
 import { useLogin } from '../composables/useLogin';
+import { isRateLimited } from '../shared/api/error-code';
 
 // Login do Coordenador — mesmo backend/mecanismo de login.vue (POST
 // /auth/login, papel SUPERVISOR), só com identidade visual própria. Não é
@@ -60,7 +61,8 @@ async function onSubmit() {
           >
           <p v-if="errors.password" class="mt-1 text-xs text-danger">{{ errors.password }}</p>
         </div>
-        <p v-if="login.isError.value" class="text-sm text-danger">E-mail ou senha inválidos.</p>
+        <p v-if="isRateLimited(login.error.value)" class="text-sm text-danger">Muitas tentativas. Aguarde alguns minutos e tente novamente.</p>
+        <p v-else-if="login.isError.value" class="text-sm text-danger">E-mail ou senha inválidos.</p>
         <button
           type="submit"
           :disabled="login.isPending.value"

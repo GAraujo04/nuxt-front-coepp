@@ -2,6 +2,7 @@
 import { z } from 'zod';
 import { useAuth } from '../composables/useAuth';
 import { useLogin } from '../composables/useLogin';
+import { isRateLimited } from '../shared/api/error-code';
 
 const { t } = useI18n();
 const { isAuthenticated } = useAuth();
@@ -61,7 +62,8 @@ async function onSubmit() {
           >
           <p v-if="errors.password" class="mt-1 text-xs text-danger">{{ errors.password }}</p>
         </div>
-        <p v-if="login.isError.value" class="text-sm text-danger">{{ t('auth.invalidCredentials') }}</p>
+        <p v-if="isRateLimited(login.error.value)" class="text-sm text-danger">{{ t('auth.tooManyAttempts') }}</p>
+        <p v-else-if="login.isError.value" class="text-sm text-danger">{{ t('auth.invalidCredentials') }}</p>
         <button
           type="submit"
           :disabled="login.isPending.value"

@@ -11,6 +11,7 @@ export default {
     password: 'Senha',
     signIn: 'Acessar o sistema',
     invalidCredentials: 'E-mail ou senha inválidos.',
+    tooManyAttempts: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.',
   },
   nav: {
     dashboard: 'Painel',

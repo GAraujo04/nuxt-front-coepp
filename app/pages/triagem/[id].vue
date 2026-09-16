@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { maskCurrency } from '../../shared/lib/masks';
+import { usePatients } from '../../composables/usePatients';
 import { useSaveScreeningDraft, useScreening } from '../../composables/useScreenings';
 import { useTransition } from '../../composables/useDocuments';
-import { getAt, missingFields, setAt, stepsFor } from '../../shared/screening/fields';
-import type { FieldDef } from '../../shared/screening/fields';
+import { addItem, DOC_TYPE_LABEL, getAt, missingFields, removeItem, setAt, stepsFor } from '../../shared/screening/fields';
 
 definePageMeta({
   layout: 'authenticated',
@@ -11,9 +10,9 @@ definePageMeta({
   roles: ['INTERN'],
 });
 
-// Wizard multi-step da triagem: preenchimento com auto-save + envio à
-// supervisão. Equivalente a features/screening/pages/ScreeningWizardPage.tsx.
-const TYPE_LABEL = { SCREENING_ADULT: 'Adulto', SCREENING_CHILD: 'Criança/Adolescente' } as const;
+// Wizard multi-step do documento clínico (as duas triagens e os cinco
+// documentos de estágio): preenchimento com auto-save + envio à supervisão.
+// Equivalente a features/screening/pages/ScreeningWizardPage.tsx.
 const EDITABLE = new Set(['RASCUNHO', 'REVISAO_SOLICITADA']);
 const DOC_PILL: Record<string, string> = {
   RASCUNHO: 'pill-muted',
@@ -23,9 +22,6 @@ const DOC_PILL: Record<string, string> = {
   REJEITADO: 'pill-danger',
   APROVADO_LOCKED: 'pill-ok',
 };
-const fieldClass =
-  'w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-body focus:border-link focus:outline-none disabled:opacity-70';
-
 const route = useRoute();
 // route.params.id como getter (não valor direto) — a rota é dinâmica e o
 // Nuxt reusa a mesma instância da página ao navegar entre triagens
@@ -35,6 +31,11 @@ const id = computed(() => route.params.id as string);
 const query = useScreening(id);
 const save = useSaveScreeningDraft();
 const transition = useTransition();
+const patients = usePatients();
+
+// O Nº do documento é o código do paciente: é por ele que o supervisor
+// identifica de qual paciente é o documento que está validando.
+const patient = computed(() => patients.data.value?.find((p) => p.id === query.data.value?.patientId));
 
 const content = ref<Record<string, unknown>>({});
 const version = ref(1);
@@ -80,15 +81,27 @@ watch(content, () => {
   onWatcherCleanup(() => clearTimeout(timer));
 });
 
-function onChange(field: FieldDef, value: string) {
+// Recebe o caminho pronto em vez do FieldDef: os campos de dentro de um
+// item do grupo repetível têm caminho calculado (ex.: "sessoes.0.dataAtendimento"),
+// que não existe no FieldDef — lá o path é relativo ao item.
+function setField(path: string, value: string) {
   if (!editable.value) return;
   dirty.value = true;
-  content.value = setAt(content.value, field.path, value);
+  content.value = setAt(content.value, path, value);
 }
 
-function onFieldInput(field: FieldDef, e: Event) {
-  const raw = (e.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value;
-  onChange(field, field.kind === 'currency' ? maskCurrency(raw) : raw);
+function onAddItem() {
+  const repeat = current.value?.repeat;
+  if (!editable.value || !repeat) return;
+  dirty.value = true;
+  content.value = addItem(content.value, repeat.path);
+}
+
+function onRemoveItem(index: number) {
+  const repeat = current.value?.repeat;
+  if (!editable.value || !repeat) return;
+  dirty.value = true;
+  content.value = removeItem(content.value, repeat.path, index);
 }
 
 function handleSubmit() {
@@ -100,14 +113,19 @@ function handleSubmit() {
 </script>
 
 <template>
-  <p v-if="query.isLoading.value" class="text-sm text-muted">Carregando triagem…</p>
-  <p v-else-if="query.isError.value || !query.data.value" class="text-sm text-danger">Triagem não encontrada.</p>
+  <p v-if="query.isLoading.value" class="text-sm text-muted">Carregando documento…</p>
+  <p v-else-if="query.isError.value || !query.data.value" class="text-sm text-danger">Documento não encontrado.</p>
   <div v-else class="mx-auto max-w-3xl">
-    <NuxtLink to="/estagiario" class="mb-3 inline-block text-sm font-medium text-link hover:underline">← Voltar ao painel</NuxtLink>
+    <NuxtLink
+      :to="`/prontuario/${query.data.value.patientId}`"
+      class="mb-3 inline-block text-sm font-medium text-link hover:underline"
+    >
+      ← Voltar ao prontuário
+    </NuxtLink>
     <div class="rounded-lg border border-border bg-surface p-6 shadow-sm">
       <div class="mb-4 flex flex-wrap items-center gap-3">
         <span class="text-sm font-bold text-muted">
-          Triagem — {{ TYPE_LABEL[query.data.value.type] }} · Nº {{ query.data.value.numero ?? '—' }}
+          {{ DOC_TYPE_LABEL[query.data.value.type] }} · Nº {{ patient?.code ?? '—' }}
         </span>
         <span class="pill" :class="DOC_PILL[query.data.value.status] ?? 'pill-muted'">{{ query.data.value.status }}</span>
         <span v-if="editable" class="ml-auto text-xs font-semibold text-ok">
@@ -134,8 +152,10 @@ function handleSubmit() {
         </ul>
       </div>
 
-      <!-- Stepper -->
-      <div class="mb-6 flex items-center gap-1 overflow-x-auto pb-1">
+      <!-- Stepper: quebra em linhas em vez de rolar na horizontal — com a
+           rolagem, as etapas seguintes ficavam fora da tela e a barra de
+           rolagem cobria parte dos nomes. -->
+      <div class="mb-6 flex flex-wrap items-center gap-x-1 gap-y-2">
         <div v-for="(s, i) in steps" :key="s.id" class="flex items-center gap-1">
           <button
             class="flex items-center gap-2 rounded-md px-2 py-1 text-sm font-semibold"
@@ -154,43 +174,32 @@ function handleSubmit() {
         </div>
       </div>
 
+      <h2 v-if="current" class="mb-4 text-base font-semibold text-body">
+        {{ step + 1 }}. {{ current.label }}
+        <span class="ml-1 text-xs font-normal text-muted">(página {{ step + 1 }} de {{ steps.length }})</span>
+      </h2>
+
       <!-- Campos -->
       <div class="space-y-4">
-        <div v-for="field in current?.fields ?? []" :key="field.path">
-          <label class="mb-1 block text-sm font-semibold text-body">{{ field.label }}</label>
-          <p v-if="field.hint" class="mb-1 text-xs text-muted">{{ field.hint }}</p>
-          <textarea
-            v-if="field.kind === 'textarea'"
-            :class="`${fieldClass} min-h-20`"
-            :value="getAt(content, field.path)"
-            :disabled="!editable"
-            @input="onFieldInput(field, $event)"
-          />
-          <select
-            v-else-if="field.kind === 'select'"
-            :class="fieldClass"
-            :value="getAt(content, field.path)"
-            :disabled="!editable"
-            @change="onFieldInput(field, $event)"
-          >
-            <option value="">Selecione…</option>
-            <option v-for="o in field.options" :key="o" :value="o">{{ o }}</option>
-          </select>
-          <PhoneField
-            v-else-if="field.kind === 'phone'"
-            :model-value="getAt(content, field.path)"
-            :disabled="!editable"
-            @update:model-value="(v) => onChange(field, v)"
-          />
-          <input
-            v-else
-            :type="field.kind === 'date' ? 'date' : 'text'"
-            :class="fieldClass"
-            :value="getAt(content, field.path)"
-            :disabled="!editable"
-            @input="onFieldInput(field, $event)"
-          >
-        </div>
+        <DocumentField
+          v-for="field in current?.fields ?? []"
+          :key="field.path"
+          :field="field"
+          :value="getAt(content, field.path)"
+          :disabled="!editable"
+          @update="(v) => setField(field.path, v)"
+        />
+
+        <!-- Grupo repetível (hoje só os atendimentos da Ficha de Evolução) -->
+        <DocumentRepeatGroup
+          v-if="current?.repeat"
+          :repeat="current.repeat"
+          :content="content"
+          :disabled="!editable"
+          @update="setField"
+          @add="onAddItem"
+          @remove="onRemoveItem"
+        />
       </div>
 
       <!-- Navegação + ações -->

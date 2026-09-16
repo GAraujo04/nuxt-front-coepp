@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { maskPhone } from '../shared/lib/masks';
+import { applyMask, maskPhone, phoneMaskLength } from '../shared/lib/masks';
 
 // Campo de telefone com seletor móvel/fixo e máscara. `label` é opcional
 // (uso dentro de outro campo). Equivalente a shared/ui/PhoneField.tsx.
@@ -14,7 +14,7 @@ function onSelectKind(e: Event) {
 }
 
 function onInputValue(e: Event) {
-  value.value = maskPhone((e.target as HTMLInputElement).value, mobile.value);
+  value.value = applyMask(e, (raw) => maskPhone(raw, mobile.value));
 }
 </script>
 
@@ -36,6 +36,8 @@ function onInputValue(e: Event) {
         :disabled="disabled"
         class="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-body focus:border-link focus:outline-none disabled:opacity-70"
         :placeholder="mobile ? '(11) 91234-5678' : '(11) 1234-5678'"
+        :maxlength="phoneMaskLength(mobile)"
+        inputmode="numeric"
         @input="onInputValue"
       >
     </div>
@@ -55,6 +57,8 @@ function onInputValue(e: Event) {
       :disabled="disabled"
       class="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-body focus:border-link focus:outline-none disabled:opacity-70"
       :placeholder="mobile ? '(11) 91234-5678' : '(11) 1234-5678'"
+      :maxlength="phoneMaskLength(mobile)"
+      inputmode="numeric"
       @input="onInputValue"
     >
   </div>

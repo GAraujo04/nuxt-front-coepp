@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from '../composables/useAuth';
 import { useInternLogin } from '../composables/useInternLogin';
-import { maskUsuarioRm } from '../shared/lib/masks';
+import { applyMask, maskUsuarioRm, MASK_LENGTH } from '../shared/lib/masks';
 import { apiErrorCode } from '../shared/api/error-code';
 
 type ErrorKind = 'invalid' | 'forbidden' | 'unavailable' | 'rate-limited' | null;
@@ -29,7 +29,7 @@ if (isAuthenticated.value) await navigateTo('/', { replace: true });
 const errorKind = computed<ErrorKind>(() => (login.isError.value ? errorKindFrom(login.error.value) : null));
 
 function onInputUsuarioRm(e: Event) {
-  usuarioRm.value = maskUsuarioRm((e.target as HTMLInputElement).value);
+  usuarioRm.value = applyMask(e, maskUsuarioRm);
 }
 
 async function onSubmit() {
@@ -55,6 +55,7 @@ async function onSubmit() {
           <label class="mb-1 block text-sm font-medium text-body">Usuário RM</label>
           <input
             :value="usuarioRm"
+            :maxlength="MASK_LENGTH.usuarioRm"
             inputmode="numeric"
             autocomplete="username"
             class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-body focus:border-link focus:outline-none"

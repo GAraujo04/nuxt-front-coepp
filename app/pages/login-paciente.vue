@@ -2,7 +2,7 @@
 import { useAuth } from '../composables/useAuth';
 import { usePatientLogin } from '../composables/usePatientLogin';
 import { isRateLimited } from '../shared/api/error-code';
-import { maskCPF } from '../shared/lib/masks';
+import { applyMask, BIRTH_DATE_MIN, maskCPF, MASK_LENGTH, todayISO } from '../shared/lib/masks';
 
 const { isAuthenticated } = useAuth();
 const login = usePatientLogin();
@@ -12,7 +12,7 @@ const birthDate = ref('');
 if (isAuthenticated.value) await navigateTo('/', { replace: true });
 
 function onInputCpf(e: Event) {
-  cpf.value = maskCPF((e.target as HTMLInputElement).value);
+  cpf.value = applyMask(e, maskCPF);
 }
 
 async function onSubmit() {
@@ -30,6 +30,8 @@ async function onSubmit() {
           <label class="mb-1 block text-sm font-medium text-body">CPF</label>
           <input
             :value="cpf"
+            :maxlength="MASK_LENGTH.cpf"
+            inputmode="numeric"
             class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-body focus:border-link focus:outline-none"
             placeholder="000.000.000-00"
             required
@@ -41,6 +43,8 @@ async function onSubmit() {
           <input
             v-model="birthDate"
             type="date"
+            :min="BIRTH_DATE_MIN"
+            :max="todayISO()"
             class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-body focus:border-link focus:outline-none"
             required
           >

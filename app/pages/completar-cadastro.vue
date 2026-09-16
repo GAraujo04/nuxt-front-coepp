@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { maskRA } from '../shared/lib/masks';
+import { applyMask, maskRA, MASK_LENGTH } from '../shared/lib/masks';
 import { useAuthStore } from '../stores/auth';
 import { api } from '../shared/api/client';
 import { useCompleteInternProfile, useRegistrationOptions, useResponsibilityTerm } from '../composables/useEnrollment';
@@ -42,7 +42,7 @@ const termAccepted = ref(false);
 const isOther = computed(() => form.academicSupervisorId === 'OUTRO');
 
 function onInputRa(e: Event) {
-  form.ra = maskRA((e.target as HTMLInputElement).value);
+  form.ra = applyMask(e, maskRA);
 }
 
 function openTermModal() {
@@ -102,7 +102,14 @@ function onSubmit() {
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="block text-sm">
             <span class="mb-1 block font-medium text-body">RA (6 dígitos)</span>
-            <input :value="form.ra" :class="inputClass" placeholder="123456" @input="onInputRa">
+            <input
+              :value="form.ra"
+              :class="inputClass"
+              :maxlength="MASK_LENGTH.ra"
+              inputmode="numeric"
+              placeholder="123456"
+              @input="onInputRa"
+            >
           </label>
           <label class="block text-sm">
             <span class="mb-1 block font-medium text-body">E-mail de contato</span>

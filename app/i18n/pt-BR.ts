@@ -4,7 +4,7 @@
  * por aqui; nada de texto hardcoded.
  */
 export default {
-  app: { name: 'PEP — Clínica-Escola de Psicologia' },
+  app: { name: 'ADMIN - COEPP - Centro de Orientação Educacional, Profissional e Psicológico' },
   auth: {
     login: 'Entrar',
     email: 'E-mail',
@@ -31,7 +31,7 @@ export default {
     accessAriaLabel: 'Acessar {portal}',
     cards: {
       intern: {
-        title: 'Portal do Aluno / Estagiário',
+        title: 'Portal do Aluno',
         description: 'Entrada com usuário e senha institucionais (TOTVS RM).',
       },
       patient: {

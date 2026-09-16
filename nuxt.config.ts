@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   vite: { plugins: [tailwindcss()] },
   app: {
     head: {
-      title: 'PEP — Clínica-Escola de Psicologia',
+      title: 'COEPP — Centro de Orientação Educacional, Profissional e Psicológico',
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },

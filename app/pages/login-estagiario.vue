@@ -43,23 +43,23 @@ async function onSubmit() {
     },
   );
 }
+
 </script>
 
 <template>
   <div class="fsa-hero-bg flex min-h-screen items-center justify-center p-4">
     <div class="w-full max-w-sm rounded-lg border border-border bg-surface p-8 shadow-sm">
-      <h1 class="mb-1 text-xl font-semibold text-body">Login do Estagiário</h1>
-      <p class="mb-6 text-sm text-muted">Entre com seu usuário e senha institucionais (TOTVS RM).</p>
+      <h1 class="mb-1 text-xl font-semibold text-body">Login do Aluno</h1>
+      <p class="mb-6 text-sm text-muted">Entre com seu usuário e senha institucionais.</p>
       <form class="space-y-4" @submit.prevent="onSubmit">
         <div>
-          <label class="mb-1 block text-sm font-medium text-body">Usuário RM</label>
+          <label class="mb-1 block text-sm font-medium text-body">Usuário</label>
           <input
             :value="usuarioRm"
             :maxlength="MASK_LENGTH.usuarioRm"
             inputmode="numeric"
             autocomplete="username"
             class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-body focus:border-link focus:outline-none"
-            placeholder="Somente números"
             required
             @input="onInputUsuarioRm"
           >
@@ -73,22 +73,6 @@ async function onSubmit() {
             class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-body focus:border-link focus:outline-none"
             required
           >
-        </div>
-        <div>
-          <label class="mb-1 block text-sm font-medium text-body">
-            E-mail do cadastro antigo <span class="font-normal text-muted">(opcional)</span>
-          </label>
-          <input
-            v-model="linkEmail"
-            type="email"
-            autocomplete="email"
-            class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-body focus:border-link focus:outline-none"
-            placeholder="Só se você já tinha uma conta antes"
-          >
-          <p class="mt-1 text-xs text-muted">
-            Já tinha cadastro de antes desse login? Informe o e-mail usado nele para vincular seus dados. Se é seu
-            primeiro acesso, deixe em branco — você vai completar o cadastro em seguida.
-          </p>
         </div>
 
         <p v-if="errorKind === 'invalid'" class="pill-danger rounded px-2 py-1 text-sm">Usuário ou senha inválidos.</p>

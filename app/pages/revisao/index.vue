@@ -29,7 +29,7 @@ const queue = useReviewQueue();
         >
           <div>
             <p class="text-sm font-medium text-body">
-              {{ TYPE_LABEL[d.type] ?? d.type }} <span class="ml-1 font-mono text-xs text-muted">Nº {{ d.numero ?? '—' }}</span>
+              {{ TYPE_LABEL[d.type] ?? d.type }} <span class="ml-1 font-mono text-xs text-muted">Nº {{ d.patientCode }}</span>
             </p>
             <p class="text-xs text-muted">Paciente: {{ d.patientName }} · Estagiário: {{ d.authorName }}</p>
           </div>

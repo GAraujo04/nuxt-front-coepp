@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { maskCRP } from '../../shared/lib/masks';
+import { applyMask, maskCRP, MASK_LENGTH } from '../../shared/lib/masks';
 import { useCreateUser, useUsersByRole } from '../../composables/useUsers';
 import { usePatients } from '../../composables/usePatients';
 import type { CreateUserPayload } from '../../composables/useUsers';
@@ -32,7 +32,7 @@ const supervisors = useUsersByRole('SUPERVISOR');
 const patients = usePatients();
 
 function onInputCrp(e: Event) {
-  form.crp = maskCRP((e.target as HTMLInputElement).value);
+  form.crp = applyMask(e, maskCRP);
 }
 
 function onSubmit() {
@@ -93,7 +93,15 @@ function onSubmit() {
             <PhoneField v-model="form.phone" label="Telefone" />
             <label class="block text-sm">
               <span class="mb-1 block font-medium text-body">CRP</span>
-              <input :value="form.crp" :class="inputClass" placeholder="06/123456" required @input="onInputCrp">
+              <input
+                :value="form.crp"
+                :class="inputClass"
+                :maxlength="MASK_LENGTH.crp"
+                inputmode="numeric"
+                placeholder="06/123456"
+                required
+                @input="onInputCrp"
+              >
             </label>
             <label class="block text-sm">
               <span class="mb-1 block font-medium text-body">Departamento</span>

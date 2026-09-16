@@ -12,6 +12,8 @@ export interface QueueItem {
   status: string;
   authorName: string;
   patientName: string;
+  /** Código do paciente — é o "Nº" exibido nos documentos. */
+  patientCode: string;
   updatedAt: string;
 }
 

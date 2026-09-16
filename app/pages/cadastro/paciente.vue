@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { maskCPF } from '../../shared/lib/masks';
+import { applyMask, BIRTH_DATE_MIN, maskCPF, MASK_LENGTH, todayISO } from '../../shared/lib/masks';
 import { useRegisterPatient } from '../../composables/useEnrollment';
 import type { AvailabilityWindowValue } from '../../components/WeeklyAvailabilityPicker.vue';
 import type { PatientSelfReg } from '../../composables/useEnrollment';
@@ -52,10 +52,10 @@ function onChangeHasDisability(value: boolean) {
 }
 
 function onInputCpf(e: Event) {
-  form.cpf = maskCPF((e.target as HTMLInputElement).value);
+  form.cpf = applyMask(e, maskCPF);
 }
 function onInputGCpf(e: Event) {
-  form.gCpf = maskCPF((e.target as HTMLInputElement).value);
+  form.gCpf = applyMask(e, maskCPF);
 }
 
 function onSubmit() {
@@ -106,11 +106,26 @@ function onSubmit() {
             </label>
             <label class="block text-sm">
               <span class="mb-1 block font-medium text-body">CPF (será seu login)</span>
-              <input :value="form.cpf" :class="inputClass" placeholder="000.000.000-00" required @input="onInputCpf">
+              <input
+                :value="form.cpf"
+                :class="inputClass"
+                :maxlength="MASK_LENGTH.cpf"
+                inputmode="numeric"
+                placeholder="000.000.000-00"
+                required
+                @input="onInputCpf"
+              >
             </label>
             <label class="block text-sm">
               <span class="mb-1 block font-medium text-body">Data de nascimento (login)</span>
-              <input v-model="form.birthDate" type="date" :class="inputClass" required>
+              <input
+                v-model="form.birthDate"
+                type="date"
+                :class="inputClass"
+                :min="BIRTH_DATE_MIN"
+                :max="todayISO()"
+                required
+              >
             </label>
             <label class="block text-sm">
               <span class="mb-1 block font-medium text-body">E-mail (para avisos da consulta)</span>
@@ -134,7 +149,14 @@ function onSubmit() {
               </label>
               <label class="block text-sm">
                 <span class="mb-1 block font-medium text-body">CPF do responsável</span>
-                <input :value="form.gCpf" :class="inputClass" placeholder="000.000.000-00" @input="onInputGCpf">
+                <input
+                  :value="form.gCpf"
+                  :class="inputClass"
+                  :maxlength="MASK_LENGTH.cpf"
+                  inputmode="numeric"
+                  placeholder="000.000.000-00"
+                  @input="onInputGCpf"
+                >
               </label>
               <PhoneField v-model="form.gPhone" label="Telefone do responsável" />
             </div>

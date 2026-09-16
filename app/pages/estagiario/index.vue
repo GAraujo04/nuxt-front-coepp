@@ -85,11 +85,9 @@ function formatDateTime(iso: string) {
 
     <!-- Meus pacientes -->
     <div>
-      <div class="mb-4 flex items-center justify-between">
+      <div class="mb-4">
         <h2 class="text-lg font-semibold text-body">Meus pacientes</h2>
-        <NuxtLink to="/triagem/nova" class="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-onprimary hover:bg-primaryh">
-          + Nova triagem
-        </NuxtLink>
+        <p class="text-xs text-muted">Abra o paciente para preencher os documentos dele.</p>
       </div>
       <p v-if="patients.data.value && patients.data.value.length === 0" class="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted">
         Você ainda não tem pacientes vinculados.

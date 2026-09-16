@@ -36,7 +36,7 @@ function formatDateTime(iso: string) {
     <NuxtLink to="/revisao" class="inline-block text-sm font-medium text-link hover:underline">← Voltar à fila de revisão</NuxtLink>
     <div class="rounded-lg border border-border bg-surface p-6 shadow-sm">
       <div class="mb-4 flex flex-wrap items-center gap-3">
-        <span class="text-sm font-bold text-muted">Nº {{ query.data.value.numero ?? '—' }}</span>
+        <span class="text-sm font-bold text-muted">Nº {{ query.data.value.patientCode }}</span>
         <span class="pill pill-info">{{ query.data.value.status }}</span>
       </div>
       <p class="mb-4 text-sm text-muted">Paciente: {{ query.data.value.patientName }} · Estagiário: {{ query.data.value.authorName }}</p>

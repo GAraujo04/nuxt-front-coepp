@@ -5,7 +5,9 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "concurrently -n back,front -c blue,green -k \"npm:dev:back\" \"npm:dev:front\"",
+    "dev:win": "concurrently -n back,front -c blue,green -k \"npm:dev:back:win\" \"npm:dev:front\"",
     "dev:back": "cd ../python-back-coepp && .venv/bin/uvicorn app.main:app --port 8001 --reload",
+    "dev:back:win": "cd ../python-back-coepp && .venv\\Scripts\\python -m uvicorn app.main:app --port 8001 --reload",
     "dev:front": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",

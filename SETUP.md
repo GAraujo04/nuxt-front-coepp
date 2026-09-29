@@ -20,17 +20,16 @@ npm install
 npm run setup -- --run
 ```
 
-O `setup` faz o resto sozinho e pode rodar de novo quando quiser: clona os
-outros dois repositórios, sobe o SQL Server, gera os segredos (os mesmos nos
-dois `.env`, que é onde é fácil errar), aplica as migrations, popula os dados
+O `setup` faz o resto sozinho e pode rodar de novo quando quiser: clona o repo
+do backend, sobe o SQL Server, gera os segredos, cria o schema, popula os dados
 de exemplo, cria a venv do Python e instala tudo. Sem `--run` ele só prepara o
 ambiente; com `--run`, já sobe backend e frontend no final. Para começar do
 zero: `npm run setup -- --reset`.
 
-Você não precisa clonar `python-back-coepp` nem `pep` na mão — o script busca
-os dois. Mas **os três repositórios são privados**: peça acesso ao dono antes
-e deixe o `git` autenticado no GitHub (`gh auth login`, chave SSH ou token),
-senão o clone falha com "repository not found".
+Você não precisa clonar `python-back-coepp` na mão — o script busca. Mas **os
+repositórios são privados**: peça acesso ao dono antes e deixe o `git`
+autenticado no GitHub (`gh auth login`, chave SSH ou token), senão o clone
+falha com "repository not found".
 
 Se ele parar no meio, a mensagem diz o que faltou. O resto deste documento é o
 mesmo processo na mão, passo a passo — útil para entender o que o script fez ou
@@ -38,22 +37,27 @@ para consertar um pedaço específico.
 
 ## 0. Estrutura de pastas (importante)
 
-São **três repositórios irmãos**, na mesma pasta pai e com estes nomes exatos —
+São **dois repositórios irmãos**, na mesma pasta pai e com estes nomes exatos —
 o script `npm run dev` do frontend chama `../python-back-coepp/.venv/bin/uvicorn`
 por caminho relativo, então renomear ou aninhar as pastas quebra o comando:
 
 ```
 <sua-pasta>/
 ├── nuxt-front-coepp     # frontend Nuxt (este repo)
-├── python-back-coepp    # backend FastAPI
-└── pep                  # Docker Compose, schema do banco (Prisma) e seed
+└── python-back-coepp    # backend FastAPI, Docker Compose, schema e seed
 ```
+
+> Existe um terceiro repositório, o `pep`: é a versão antiga do projeto
+> (React + Fastify), de onde estes dois foram migrados. Ele **não** faz parte
+> do ambiente de desenvolvimento — até 29/09/2026 o banco ainda dependia das
+> migrations dele, o que deixou de ser verdade. Continua valendo como
+> histórico e como o lugar onde vivem os ADRs e as specs.
 
 ## 1. Instalar as ferramentas
 
 | Ferramenta | Versão | Para quê |
 | --- | --- | --- |
-| Node.js + npm | ≥ 22 | frontend Nuxt e as migrations/seed do `pep` |
+| Node.js + npm | ≥ 22 | frontend Nuxt |
 | Python | ≥ 3.13 | backend FastAPI |
 | Docker Desktop | atual | sobe o SQL Server 2022 |
 | ODBC Driver 18 for SQL Server | 18 | o `pyodbc` não conecta sem ele |
@@ -76,45 +80,19 @@ dos comandos abaixo muda de `.venv/bin/...` para `.venv\Scripts\...`.
 ## 2. Subir o banco
 
 ```bash
-cd pep
-docker compose up -d mssql mssql-init
+cd python-back-coepp
+docker compose up -d --wait mssql
+docker compose up mssql-init
 ```
 
 O serviço `mssql-init` cria o banco `pep` (o SQL Server não tem equivalente ao
-`POSTGRES_DB`, que criava o banco sozinho). Espere o healthcheck ficar
-`healthy` — `docker compose ps` mostra o estado.
+`POSTGRES_DB`, que criava o banco sozinho).
 
 Senha padrão do `sa` em dev: `Pep_Dev_Password_2026!` (definida no
 `docker-compose.yml`; dá para trocar exportando `MSSQL_SA_PASSWORD` antes do
-`up`, mas aí ela precisa bater com as duas `DATABASE_URL` dos passos seguintes).
+`up`, mas aí ela precisa bater com a `DATABASE_URL` do passo seguinte).
 
-## 3. Criar o schema e os dados de exemplo
-
-O schema do banco é definido pelo **Prisma**, no repo `pep` — o backend Python
-consome o mesmo banco, não o redefine. Então as migrations rodam daqui:
-
-```bash
-cd pep/apps/api
-cp .env.example .env
-npm install
-npx prisma migrate deploy
-npm run db:seed
-```
-
-No `.env` que você acabou de copiar, só precisa conferir a `DATABASE_URL` (o
-default já aponta para o container com a senha padrão). `JWT_SECRET` e
-`ENCRYPTION_KEY` são exigidos pelo backend Fastify, que não usamos no dia a
-dia — mas o `db:seed` também os lê, porque grava PII cifrada. Preencha:
-
-```bash
-openssl rand -base64 48   # JWT_SECRET
-openssl rand -base64 32   # ENCRYPTION_KEY
-```
-
-Guarde esses dois valores: eles têm que ser **os mesmos** no `.env` do backend
-Python (passo 4).
-
-## 4. Backend Python
+## 3. Backend Python
 
 ```bash
 cd python-back-coepp
@@ -125,24 +103,25 @@ cp .env.example .env
 
 Edite o `.env`:
 
-- **`DATABASE_URL`** — mesmo banco, sintaxe diferente (SQLAlchemy+pyodbc, não
-  Prisma). Troque só a senha:
+- **`DATABASE_URL`** — troque só a senha:
   `mssql+pyodbc://sa:Pep_Dev_Password_2026!@localhost:1433/pep?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes&Encrypt=yes`
-- **`JWT_SECRET`** — o mesmo do passo 3 (mínimo 32 caracteres).
-- **`ENCRYPTION_KEY`** — o mesmo do passo 3, obrigatoriamente. Chave diferente
-  torna ilegível todo o PII já gravado pelo seed (nome do paciente, conteúdo
-  clínico): o backend não "erra a senha", ele falha ao decifrar.
+- **`JWT_SECRET`** — mínimo 32 caracteres: `openssl rand -base64 48`
+- **`ENCRYPTION_KEY`** — 32 bytes em base64: `openssl rand -base64 32`
 - **`TOTVS_MOCK=true`** — já vem assim no `.env.example`. Mantenha: o TOTVS RM
   real da FSA não é acessível de fora da instituição.
 
-Depois, as migrations próprias do Python (três, de criptografia de campos) —
-**sempre depois** do `prisma migrate deploy`:
+⚠️ Depois que o banco tiver dados, **não troque a `ENCRYPTION_KEY`**. É ela que
+cifra o PII em repouso (nome do paciente, CPF, conteúdo clínico). Uma chave
+diferente não dá erro de credencial: deixa ilegível tudo que já está gravado.
+
+Schema e dados:
 
 ```bash
-.venv/bin/alembic upgrade head
+.venv/bin/alembic upgrade head      # cria as tabelas, RLS e triggers
+.venv/bin/python -m scripts.seed    # usuários e paciente de exemplo (idempotente)
 ```
 
-## 5. Frontend
+## 4. Frontend
 
 ```bash
 cd nuxt-front-coepp
@@ -158,9 +137,9 @@ proxy do `nuxt.config.ts`, o que mantém front e back na mesma origem para o
 navegador (é o que faz o cookie httpOnly do refresh token funcionar). Para
 apontar para outro backend: `API_TARGET=http://localhost:8000 npm run dev`.
 
-## 6. Logins de teste
+## 5. Logins de teste
 
-Criados pelo `npm run db:seed` do passo 3:
+Criados pelo `scripts.seed` do passo 3:
 
 | Papel | Como entrar |
 | --- | --- |
@@ -181,7 +160,7 @@ caminho é o TOTVS, e com `TOTVS_MOCK=true` o mock aceita:
 No primeiro acesso do estagiário o sistema pede para completar o cadastro
 (disciplina, supervisor, disponibilidade, termo) — é esperado.
 
-## 7. Conferir que está tudo certo
+## 6. Conferir que está tudo certo
 
 ```bash
 # backend
@@ -204,7 +183,8 @@ instalado, ou o `pip install` rodou antes dele. Instale o `msodbcsql18` e
 refaça o `.venv/bin/pip install -e ".[dev]"`.
 
 **Backend sobe, mas nome do paciente vem embaralhado ou dá erro ao decifrar** —
-`ENCRYPTION_KEY` diferente da que o seed usou. As duas têm que ser idênticas.
+a `ENCRYPTION_KEY` mudou depois que o dado foi gravado. Volte a chave anterior,
+ou recomece com `npm run setup -- --reset`.
 
 **`Login failed for user 'sa'`** — a senha na `DATABASE_URL` não bate com a do
 container. Se você já tinha subido o container antes com outra senha, o volume
@@ -220,7 +200,7 @@ ou banco fora do ar.
 
 ## Onde está a documentação de arquitetura
 
-As decisões (ADRs) e specs vivem no repo `pep`, não nestes dois:
+As decisões (ADRs) e specs vivem no repo `pep`, o projeto antigo:
 
 - `pep/docs/adr/0004-frontend-vue-nuxt-repo-proprio.md` — por que Vue/Nuxt
 - `pep/docs/adr/0005-backend-python-fastapi-repo-proprio.md` — por que FastAPI

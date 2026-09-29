@@ -49,13 +49,23 @@ se sua estrutura local for diferente.)
 
 ## Rodando localmente
 
-Pré-requisito: o backend (`pep-main/apps/api`) rodando em `localhost:8000`
-(ver `pep-main/CLAUDE.md` pra subir a stack — Docker Compose + `npm run dev:api`).
+Numa máquina nova, um comando monta tudo (banco, migrations, seed, venv do
+backend e os `.env`):
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000
+npm run setup -- --run
 ```
+
+Depois disso, no dia a dia:
+
+```bash
+npm run dev      # backend (:8001) + front (:3000) — http://localhost:3000
+```
+
+O `npm run dev` sobe também o backend Python (`../python-back-coepp`), por
+caminho relativo — os repositórios precisam ser pastas irmãs. Pré-requisitos,
+passo a passo manual, logins de teste e solução de problemas: [SETUP.md](SETUP.md).
 
 ## Status
 

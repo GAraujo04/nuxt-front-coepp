@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
+    "setup": "bash scripts/setup.sh",
     "dev": "concurrently -n back,front -c blue,green -k \"npm:dev:back\" \"npm:dev:front\"",
     "dev:back": "cd ../python-back-coepp && .venv/bin/uvicorn app.main:app --port 8001 --reload",
     "dev:front": "nuxt dev",

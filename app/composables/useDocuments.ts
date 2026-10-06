@@ -44,6 +44,20 @@ export function useReviewQueue() {
   });
 }
 
+export interface ReportItem extends QueueItem {
+  authorId: string;
+  /** Chegada ao supervisor: o último envio do estagiário. */
+  submittedAt: string;
+}
+
+/** Documentos já enviados (não rascunho), em ordem de chegada — Supervisor (seus pacientes) / Admin. */
+export function useReports() {
+  return useQuery({
+    queryKey: ['reports'],
+    queryFn: async () => (await api.get<ReportItem[]>('/documents/reports')).data,
+  });
+}
+
 /** Documento aberto para revisão. */
 export function useReviewDoc(id: MaybeRefOrGetter<string | undefined>) {
   return useQuery({
@@ -69,6 +83,7 @@ export function useTransition() {
       qc.invalidateQueries({ queryKey: ['screenings'] });
       qc.invalidateQueries({ queryKey: ['review-queue'] });
       qc.invalidateQueries({ queryKey: ['review-doc', v.id] });
+      qc.invalidateQueries({ queryKey: ['reports'] });
     },
   });
 }

@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { mountSuspended } from '@nuxt/test-utils/runtime';
 import DocumentField from '../../app/components/DocumentField.vue';
 import DocumentRepeatGroup from '../../app/components/DocumentRepeatGroup.vue';
-import { DOC_TYPE_LABEL, initialContentFor, missingFields, PATIENT_DOC_SLOTS, stepsFor } from '../../app/shared/screening/fields';
+import { ref } from 'vue';
+import { addItem, DOC_TYPE_LABEL, initialContentFor, missingFields, PATIENT_DOC_SLOTS, removeItem, setAt, stepsFor } from '../../app/shared/screening/fields';
 import type { ScreeningType } from '../../app/composables/useScreenings';
 
 // Mesmo motivo do teste de middleware: plugins do Nuxt rodam no boot e o
@@ -137,5 +138,21 @@ describe('as sete linhas fixas do prontuário', () => {
       expect(slot.label, `slot ${slot.id} sem rótulo`).toBeTruthy();
       for (const t of slot.types) expect(DOC_TYPE_LABEL[t], `${t} sem rótulo`).toBeTruthy();
     }
+  });
+});
+
+// No wizard o content é um ref — um Proxy reativo. structuredClone rejeita
+// Proxy, então setAt/addItem lançavam e toda edição (e o "+ Adicionar
+// atendimento") era descartada em silêncio.
+describe('edição do content reativo', () => {
+  it('setAt, addItem e removeItem aceitam o content de um ref', () => {
+    const content = ref<Record<string, unknown>>({ sessoes: [{}] });
+
+    content.value = setAt(content.value, 'sessoes.0.dataAtendimento', '2026-10-06');
+    content.value = addItem(content.value, 'sessoes');
+    expect(content.value).toEqual({ sessoes: [{ dataAtendimento: '2026-10-06' }, {}] });
+
+    content.value = removeItem(content.value, 'sessoes', 0);
+    expect(content.value).toEqual({ sessoes: [{}] });
   });
 });

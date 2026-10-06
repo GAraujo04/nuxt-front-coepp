@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useCreateScreening, useScreenings } from '../../composables/useScreenings';
 import { usePatients } from '../../composables/usePatients';
+import { useAuth } from '../../composables/useAuth';
 import type { Screening, ScreeningType } from '../../composables/useScreenings';
 import { DOC_TYPE_LABEL, initialContentFor, PATIENT_DOC_SLOTS } from '../../shared/screening/fields';
 import type { DocSlot } from '../../shared/screening/fields';
+import { patientDisplayName } from '../../shared/lib/patient-display';
 
 definePageMeta({
   layout: 'authenticated',
@@ -45,6 +47,7 @@ const DISABILITY_LABEL: Record<string, string> = {
 };
 
 const route = useRoute();
+const { user } = useAuth();
 const patientId = computed(() => route.params.patientId as string);
 const patients = usePatients();
 const screenings = useScreenings();
@@ -103,8 +106,8 @@ async function openSlot(slot: DocSlot) {
     <NuxtLink to="/estagiario" class="mb-3 inline-block text-sm font-medium text-link hover:underline">← Voltar aos meus pacientes</NuxtLink>
 
     <div class="mb-5">
-      <h1 class="text-lg font-semibold text-body">Prontuário — {{ patient?.fullName ?? '…' }}</h1>
-      <p v-if="patient?.code" class="text-xs text-muted">Código: <span class="font-mono">{{ patient.code }}</span></p>
+      <!-- Estagiário vê o código no lugar do nome (ver patientDisplayName). -->
+      <h1 class="text-lg font-semibold text-body">Prontuário — {{ patient ? patientDisplayName(patient, user?.role) : '…' }}</h1>
       <p v-if="patient?.birthDate" class="text-xs text-muted">Nascimento: {{ patient.birthDate }}</p>
       <p v-if="patient?.hasDisability" class="text-xs text-muted">
         Deficiência:

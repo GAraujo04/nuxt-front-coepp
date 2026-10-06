@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/vue-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { api } from '../shared/api/client';
 
 // Porta features/enrollment/api/use-enrollment.ts inteiro (tipos + hooks) —
@@ -113,11 +113,73 @@ export function useMyAvailabilityWindows() {
   });
 }
 
-/** Substitui a disponibilidade recorrente do estagiário logado — editável a qualquer momento do semestre. */
+/**
+ * Substitui a disponibilidade recorrente do estagiário logado. Só passa com
+ * a edição liberada pelo supervisor (403 se travada), e a liberação é
+ * gasta neste salvamento — por isso revalida a trava.
+ */
 export function useUpdateAvailabilityWindows() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: async (windows: AvailabilityWindowPayload[]) => {
       await api.put('/enrollment/availability-windows', { windows });
     },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['availability-lock'] }),
+  });
+}
+
+export interface AvailabilityLock {
+  editable: boolean;
+  unlockedUntil: string | null;
+  requestedAt: string | null;
+  requestReason: string | null;
+}
+
+/** Situação da trava de disponibilidade do estagiário logado. */
+export function useAvailabilityLock() {
+  return useQuery({
+    queryKey: ['availability-lock'],
+    queryFn: async () => (await api.get<AvailabilityLock>('/enrollment/availability-lock')).data,
+  });
+}
+
+/** Estagiário pede ao supervisor a liberação para alterar a disponibilidade. */
+export function useRequestAvailabilityChange() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (reason: string) => {
+      await api.post('/enrollment/availability-change-request', { reason });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['availability-lock'] }),
+  });
+}
+
+export interface AvailabilityRequest {
+  internId: string;
+  internName: string;
+  ra: string | null;
+  requestedAt: string | null;
+  reason: string | null;
+  /** Preenchido quando a edição já está liberada (e ainda não foi usada). */
+  unlockedUntil: string | null;
+}
+
+/** Pedidos de mudança de disponibilidade e liberações em vigor (Supervisor: os seus; Admin: todos). */
+export function useAvailabilityRequests() {
+  return useQuery({
+    queryKey: ['availability-requests'],
+    queryFn: async () => (await api.get<AvailabilityRequest[]>('/availability-requests')).data,
+  });
+}
+
+/** Libera (por `hours`) ou trava de novo a disponibilidade de um estagiário. */
+export function useDecideAvailabilityRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (v: { internId: string; unlock: boolean; hours?: number }) => {
+      if (v.unlock) await api.post(`/interns/${v.internId}/availability-unlock`, { hours: v.hours ?? 48 });
+      else await api.post(`/interns/${v.internId}/availability-relock`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['availability-requests'] }),
   });
 }

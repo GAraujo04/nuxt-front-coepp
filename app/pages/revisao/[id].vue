@@ -14,6 +14,12 @@ const query = useReviewDoc(id);
 const transition = useTransition();
 const comment = ref('');
 
+// Os relatórios linkam para cá documentos fora da fila (aprovados,
+// rejeitados…): para esses a tela é só leitura — a máquina de estados
+// recusaria qualquer decisão.
+const REVIEWABLE = new Set(['ENVIADO_PARA_SUPERVISAO', 'EM_REVISAO']);
+const reviewable = computed(() => !!query.data.value && REVIEWABLE.has(query.data.value.status));
+
 const steps = computed(() => (query.data.value ? stepsFor(query.data.value.type as ScreeningType) : []));
 
 function act(action: 'APPROVE' | 'REQUEST_CHANGES' | 'REJECT') {
@@ -72,8 +78,12 @@ function formatDateTime(iso: string) {
       </ul>
     </div>
 
+    <p v-if="!reviewable" class="rounded-lg border border-border bg-surface2 p-4 text-sm text-muted">
+      Este documento não está aguardando revisão — somente leitura.
+    </p>
+
     <!-- Decisão -->
-    <div class="rounded-lg border border-border bg-surface p-5 shadow-sm">
+    <div v-else class="rounded-lg border border-border bg-surface p-5 shadow-sm">
       <h3 class="mb-2 text-sm font-semibold text-body">Parecer do supervisor</h3>
       <textarea
         v-model="comment"

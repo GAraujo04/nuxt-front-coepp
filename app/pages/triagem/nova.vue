@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { usePatients } from '../../composables/usePatients';
+import { useAuth } from '../../composables/useAuth';
 import { useCreateScreening, useScreenings } from '../../composables/useScreenings';
 import type { ScreeningType } from '../../composables/useScreenings';
 import { DOC_TYPE_LABEL, initialContentFor } from '../../shared/screening/fields';
+import { patientDisplayName } from '../../shared/lib/patient-display';
 
 definePageMeta({
   layout: 'authenticated',
@@ -21,6 +23,7 @@ definePageMeta({
 const SCREENING_TYPES: ScreeningType[] = ['SCREENING_ADULT', 'SCREENING_CHILD'];
 
 const route = useRoute();
+const { user } = useAuth();
 const patients = usePatients();
 const screenings = useScreenings();
 const create = useCreateScreening();
@@ -83,8 +86,7 @@ const backTo = computed(() => (patientIdFromRoute.value ? `/prontuario/${patient
       <div v-if="patientIdFromRoute">
         <span class="mb-1 block text-sm font-semibold text-body">Paciente</span>
         <p class="rounded-md border border-border bg-surface2 px-3 py-2 text-sm text-body">
-          {{ lockedPatient?.fullName ?? 'Carregando…' }}
-          <span v-if="lockedPatient?.code" class="ml-1 font-mono text-xs text-muted">({{ lockedPatient.code }})</span>
+          <span class="font-mono">{{ lockedPatient ? patientDisplayName(lockedPatient, user?.role) : 'Carregando…' }}</span>
         </p>
       </div>
       <label v-else class="block text-sm">
@@ -96,7 +98,7 @@ const backTo = computed(() => (patientIdFromRoute.value ? `/prontuario/${patient
         >
           <option value="">Selecione…</option>
           <option v-for="p in patients.data.value" :key="p.id" :value="p.id">
-            {{ p.fullName }}{{ p.birthDate ? ` (${p.birthDate})` : '' }}
+            {{ patientDisplayName(p, user?.role) }}{{ p.birthDate ? ` (${p.birthDate})` : '' }}
           </option>
         </select>
         <span v-if="patients.data.value?.length === 0" class="mt-1 block text-xs text-muted">

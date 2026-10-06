@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useAgenda, useRegisterAttendance } from '../../composables/useAgenda';
+import { useAuth } from '../../composables/useAuth';
 import { usePatients } from '../../composables/usePatients';
 import { useScreenings } from '../../composables/useScreenings';
 import type { AppointmentStatus } from '../../composables/useAgenda';
+import { patientDisplayName } from '../../shared/lib/patient-display';
 
 definePageMeta({
   layout: 'authenticated',
@@ -26,6 +28,7 @@ const STATUS_PILL: Record<AppointmentStatus, string> = {
   CANCELLED: 'pill-muted',
 };
 
+const { user } = useAuth();
 const agenda = useAgenda();
 const attendance = useRegisterAttendance();
 const patients = usePatients();
@@ -99,7 +102,7 @@ function formatDateTime(iso: string) {
             class="flex items-center justify-between rounded-lg border border-border bg-surface p-4 shadow-sm hover:border-link"
           >
             <div>
-              <p class="text-sm font-medium text-body">{{ p.fullName }}</p>
+              <p class="font-mono text-sm font-medium text-body">{{ patientDisplayName(p, user?.role) }}</p>
               <p class="text-xs text-muted">{{ p.isMinor ? 'Menor de idade' : 'Adulto' }}</p>
             </div>
             <span class="pill pill-muted">{{ countFor(p.id) }} relatório(s)</span>

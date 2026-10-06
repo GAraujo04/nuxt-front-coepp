@@ -22,6 +22,17 @@ const pending = computed(() => queue.data.value?.length ?? 0);
       <span class="pill" :class="pending > 0 ? 'pill-info' : 'pill-muted'">{{ pending }} na fila</span>
     </NuxtLink>
 
+    <NuxtLink
+      to="/relatorios"
+      class="flex items-center justify-between rounded-lg border border-border bg-surface p-5 shadow-sm hover:border-link"
+    >
+      <div>
+        <h2 class="text-sm font-semibold text-body">Relatórios</h2>
+        <p class="text-xs text-muted">Todos os documentos enviados, em ordem de chegada, com filtros por aluno, período e tipo.</p>
+      </div>
+      <span class="text-sm text-link">Abrir →</span>
+    </NuxtLink>
+
     <AvailabilityRequests />
 
     <MatchesList />

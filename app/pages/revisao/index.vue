@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { useReviewQueue } from '../../composables/useDocuments';
+import { DOC_TYPE_LABEL } from '../../shared/screening/fields';
 
 definePageMeta({ layout: 'authenticated', middleware: 'require-role', roles: ['SUPERVISOR'] });
 
 // Fila de documentos aguardando revisão do supervisor. Equivalente a
 // features/documents/pages/ReviewQueue.tsx.
-const TYPE_LABEL: Record<string, string> = {
-  SCREENING_ADULT: 'Triagem — Adulto',
-  SCREENING_CHILD: 'Triagem — Criança/Adolescente',
-};
+// Todos os tipos, não só as triagens: os documentos de estágio também
+// passam pela fila e apareciam com o código cru (ex.: "EVOLUTION").
+const TYPE_LABEL: Record<string, string> = DOC_TYPE_LABEL;
 const PILL: Record<string, string> = { ENVIADO_PARA_SUPERVISAO: 'pill-info', EM_REVISAO: 'pill-info' };
 
 const queue = useReviewQueue();

@@ -122,6 +122,8 @@ function onSubmit() {
 
       <PendingSupervisors :supervisors="supervisors.data.value" />
 
+      <AvailabilityRequests />
+
       <div class="grid gap-6 lg:grid-cols-3">
         <AdminList title="Estagiários" :rows="interns.data.value?.map((u) => ({ id: u.id, main: u.fullName, sub: `RA ${u.ra ?? '—'}` }))" />
         <AdminList title="Supervisores" :rows="supervisors.data.value?.map((s) => ({ id: s.id, main: s.fullName, sub: `CRP ${s.crp ?? '—'}` }))" />

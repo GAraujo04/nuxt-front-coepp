@@ -22,6 +22,8 @@ const pending = computed(() => queue.data.value?.length ?? 0);
       <span class="pill" :class="pending > 0 ? 'pill-info' : 'pill-muted'">{{ pending }} na fila</span>
     </NuxtLink>
 
+    <AvailabilityRequests />
+
     <MatchesList />
   </div>
 </template>

@@ -5,6 +5,7 @@ import { useCreateScreening, useScreenings } from '../../composables/useScreenin
 import type { ScreeningType } from '../../composables/useScreenings';
 import { DOC_TYPE_LABEL, initialContentFor } from '../../shared/screening/fields';
 import { patientDisplayName } from '../../shared/lib/patient-display';
+import { apiErrorCode } from '../../shared/api/error-code';
 
 definePageMeta({
   layout: 'authenticated',
@@ -46,6 +47,11 @@ const existingScreening = computed(() =>
     (s) => s.patientId === patientId.value && (s.type === 'SCREENING_ADULT' || s.type === 'SCREENING_CHILD'),
   ),
 );
+// A triagem é única por paciente, e o backend é quem garante: a triagem de
+// OUTRO estagiário não aparece em `screenings` (RLS), então só o 409 da
+// criação revela que ela existe.
+const screeningTaken = computed(() => create.isError.value && apiErrorCode(create.error.value) === 'conflict');
+
 // Só as triagens deixam escolher a variante na tela (Adulto / Criança). Os
 // documentos de estágio chegam com o tipo já definido pelo botão do prontuário.
 const choosingScreeningType = computed(() => !typeFromRoute.value);
@@ -125,7 +131,11 @@ const backTo = computed(() => (patientIdFromRoute.value ? `/prontuario/${patient
       <p v-if="existingScreening" class="rounded-md border border-border bg-surface2 p-3 text-sm text-muted">
         Este paciente já tem uma triagem. Ao continuar, você abre a que existe.
       </p>
-      <p v-if="create.isError.value" class="text-sm text-danger">Não foi possível criar o documento.</p>
+      <p v-if="screeningTaken" class="text-sm text-danger">
+        Este paciente já possui uma triagem — ela é preenchida uma única vez por paciente. Fale com o supervisor se
+        precisar acessá-la.
+      </p>
+      <p v-else-if="create.isError.value" class="text-sm text-danger">Não foi possível criar o documento.</p>
 
       <button
         type="submit"

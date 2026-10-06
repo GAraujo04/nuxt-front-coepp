@@ -130,7 +130,7 @@ function formatDateTime(iso: string) {
                 {{ DOC_TYPE_LABEL[d.type as keyof typeof DOC_TYPE_LABEL] ?? d.type }}
                 <span class="ml-1 font-mono text-xs text-muted">Nº {{ d.patientCode }}</span>
               </p>
-              <p class="text-xs text-muted">Paciente: {{ d.patientName }} · Aluno: {{ d.authorName }}</p>
+              <p class="text-xs text-muted">Aluno: {{ d.authorName }}</p>
               <p class="text-xs text-muted">Enviado em {{ formatDateTime(d.submittedAt) }}</p>
             </div>
             <span class="pill" :class="STATUS_PILL[d.status] ?? 'pill-muted'">{{ STATUS_LABEL[d.status] ?? d.status }}</span>

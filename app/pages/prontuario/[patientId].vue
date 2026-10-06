@@ -91,7 +91,7 @@ async function openSlot(slot: DocSlot) {
       type,
       patientId: patientId.value,
       content: patient.value
-        ? initialContentFor(type, { fullName: patient.value.fullName, birthDate: patient.value.birthDate })
+        ? initialContentFor(type, { fullName: patient.value.fullName ?? '', birthDate: patient.value.birthDate })
         : undefined,
     });
     await navigateTo(`/triagem/${created.id}`);
@@ -106,8 +106,10 @@ async function openSlot(slot: DocSlot) {
     <NuxtLink to="/estagiario" class="mb-3 inline-block text-sm font-medium text-link hover:underline">← Voltar aos meus pacientes</NuxtLink>
 
     <div class="mb-5">
-      <!-- Estagiário vê o código no lugar do nome (ver patientDisplayName). -->
+      <!-- Listas mostram só o código (ver patientDisplayName); aqui, no
+           prontuário aberto, o estagiário vê o nome de quem vai atender. -->
       <h1 class="text-lg font-semibold text-body">Prontuário — {{ patient ? patientDisplayName(patient, user?.role) : '…' }}</h1>
+      <p v-if="patient?.fullName" class="text-sm text-body">Paciente: <strong>{{ patient.fullName }}</strong></p>
       <p v-if="patient?.birthDate" class="text-xs text-muted">Nascimento: {{ patient.birthDate }}</p>
       <p v-if="patient?.hasDisability" class="text-xs text-muted">
         Deficiência:

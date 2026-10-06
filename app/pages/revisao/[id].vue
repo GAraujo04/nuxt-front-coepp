@@ -45,7 +45,7 @@ function formatDateTime(iso: string) {
         <span class="text-sm font-bold text-muted">Nº {{ query.data.value.patientCode }}</span>
         <span class="pill pill-info">{{ query.data.value.status }}</span>
       </div>
-      <p class="mb-4 text-sm text-muted">Paciente: {{ query.data.value.patientName }} · Estagiário: {{ query.data.value.authorName }}</p>
+      <p class="mb-4 text-sm text-muted">Estagiário: {{ query.data.value.authorName }}</p>
 
       <!-- Conteúdo (somente leitura) -->
       <div class="space-y-5">

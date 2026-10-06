@@ -9,7 +9,8 @@ export interface DisabilitySummary {
 export interface PatientSummary {
   id: string;
   code: string;
-  fullName: string;
+  /** null para o supervisor — ele identifica o paciente pelo código. */
+  fullName: string | null;
   birthDate: string | null;
   isMinor: boolean;
   hasDisability: boolean;

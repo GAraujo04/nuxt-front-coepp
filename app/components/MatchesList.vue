@@ -48,7 +48,7 @@ function formatDateTime(iso: string) {
     <ul class="space-y-2">
       <li v-for="m in matches.data.value" :key="m.appointmentId" class="flex items-center justify-between rounded-lg border border-border bg-surface p-4 shadow-sm">
         <div>
-          <p class="text-sm font-medium text-body">{{ m.internName }} <span class="text-muted">↔</span> {{ m.patientName }}</p>
+          <p class="text-sm font-medium text-body">{{ m.internName }} <span class="text-muted">↔</span> {{ m.patientName ?? `Paciente ${m.patientCode}` }}</p>
           <p class="text-xs text-muted">
             {{ formatDateTime(m.scheduledAt) }}
             <span v-if="m.roomName"> · {{ m.roomName }}</span>

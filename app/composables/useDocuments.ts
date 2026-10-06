@@ -11,7 +11,8 @@ export interface QueueItem {
   type: string;
   status: string;
   authorName: string;
-  patientName: string;
+  /** null para o supervisor (o nome ele lê na ficha de triagem). */
+  patientName: string | null;
   /** Código do paciente — é o "Nº" exibido nos documentos. */
   patientCode: string;
   updatedAt: string;

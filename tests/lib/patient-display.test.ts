@@ -4,13 +4,18 @@ import { patientDisplayName } from '../../app/shared/lib/patient-display';
 const patient = { code: 'PAC-00123', fullName: 'Nilda Araujo' };
 
 describe('patientDisplayName', () => {
-  it('estagiário vê só o código', () => {
+  it('administrativo vê o nome', () => {
+    expect(patientDisplayName(patient, 'ADMIN')).toBe('Nilda Araujo');
+  });
+
+  it('estagiário vê o código nas listas (o nome fica no prontuário)', () => {
     expect(patientDisplayName(patient, 'INTERN')).toBe('PAC-00123');
   });
 
-  it('supervisor e administrativo continuam vendo o nome', () => {
-    expect(patientDisplayName(patient, 'SUPERVISOR')).toBe('Nilda Araujo');
-    expect(patientDisplayName(patient, 'ADMIN')).toBe('Nilda Araujo');
+  it('supervisor vê só o código', () => {
+    expect(patientDisplayName(patient, 'SUPERVISOR')).toBe('PAC-00123');
+    // O backend nem envia o nome ao supervisor.
+    expect(patientDisplayName({ code: 'PAC-00123', fullName: null }, 'SUPERVISOR')).toBe('PAC-00123');
   });
 
   it('sem papel conhecido, cai no lado seguro (código)', () => {

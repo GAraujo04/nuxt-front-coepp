@@ -11,7 +11,9 @@ export interface MatchView {
   scheduledAt: string;
   status: string;
   internName: string;
-  patientName: string;
+  /** null para o supervisor — usar patientCode. */
+  patientName: string | null;
+  patientCode: string;
   roomName: string | null;
 }
 

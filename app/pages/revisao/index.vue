@@ -31,7 +31,7 @@ const queue = useReviewQueue();
             <p class="text-sm font-medium text-body">
               {{ TYPE_LABEL[d.type] ?? d.type }} <span class="ml-1 font-mono text-xs text-muted">Nº {{ d.patientCode }}</span>
             </p>
-            <p class="text-xs text-muted">Paciente: {{ d.patientName }} · Estagiário: {{ d.authorName }}</p>
+            <p class="text-xs text-muted">Estagiário: {{ d.authorName }}</p>
           </div>
           <span class="pill" :class="PILL[d.status] ?? 'pill-muted'">{{ d.status }}</span>
         </NuxtLink>

@@ -69,7 +69,7 @@ function onSubmit() {
       // Identificação copiada do cadastro: são campos não editáveis no
       // wizard, então a criação é a única oportunidade de preenchê-los.
       content: patient
-        ? initialContentFor(type.value, { fullName: patient.fullName, birthDate: patient.birthDate })
+        ? initialContentFor(type.value, { fullName: patient.fullName ?? '', birthDate: patient.birthDate })
         : undefined,
     },
     { onSuccess: (s) => navigateTo(`/triagem/${s.id}`) },

@@ -7,7 +7,7 @@ import type { CreateUserPayload } from '../../composables/useUsers';
 definePageMeta({ layout: 'authenticated', middleware: 'require-role', roles: ['ADMIN'] });
 
 // Painel Administrativo: lista de usuários + cadastro de supervisor +
-// pareamento + vínculos. Pacientes e alunos se autocadastram (não passam
+// pareamento + período de atendimentos + vínculos. Pacientes e alunos se autocadastram (não passam
 // mais pelo admin). Equivalente a features/admin/pages/AdminDashboard.tsx —
 // a página mais "hub" da migração: 5 abas, 4 delas cada uma fechando uma
 // sub-slice inteira (assignments, disciplinas, rooms, matching).
@@ -15,6 +15,7 @@ const TAB_LABEL = {
   users: 'Usuários',
   disciplinas: 'Disciplinas',
   matching: 'Pareamento',
+  periodo: 'Período',
   assignments: 'Vínculos',
   rooms: 'Salas',
 } as const;
@@ -51,7 +52,7 @@ function onSubmit() {
 
 <template>
   <section class="space-y-6">
-    <div class="flex gap-2 border-b border-border pb-3">
+    <div class="flex flex-wrap gap-2 border-b border-border pb-3">
       <button
         v-for="tb in TABS"
         :key="tb"
@@ -69,6 +70,7 @@ function onSubmit() {
       <MatchesList can-run />
       <ManualMatchPanel />
     </template>
+    <AttendancePeriodAdmin v-else-if="tab === 'periodo'" />
     <AssignmentsAdmin v-else-if="tab === 'assignments'" />
     <RoomsAdmin v-else-if="tab === 'rooms'" />
 

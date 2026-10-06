@@ -2,7 +2,7 @@
 import { isAxiosError } from 'axios';
 import { useUsersByRole } from '../composables/useUsers';
 import { usePatients } from '../composables/usePatients';
-import { useRooms } from '../composables/useRooms';
+import { ROOM_CATEGORY_LABEL, useRooms } from '../composables/useRooms';
 import { useCreateManualMatch, useSuggestions } from '../composables/useMatching';
 import type { ManualMatchWarning } from '../composables/useMatching';
 
@@ -92,7 +92,7 @@ function formatDateTime(iso: string) {
         <span class="mb-1 block font-medium text-body">Sala (opcional)</span>
         <select v-model="form.roomId" :class="fieldClass" @change="clearFeedback">
           <option value="">Sem sala definida</option>
-          <option v-for="r in rooms.data.value" :key="r.id" :value="r.id">{{ r.name }}</option>
+          <option v-for="r in rooms.data.value" :key="r.id" :value="r.id">{{ r.name }} ({{ ROOM_CATEGORY_LABEL[r.category] }})</option>
         </select>
       </label>
 

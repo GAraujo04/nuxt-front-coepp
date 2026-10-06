@@ -285,9 +285,20 @@ export function getList(content: Record<string, unknown>, path: string): Record<
   return Array.isArray(val) ? (val as Record<string, unknown>[]) : [];
 }
 
+/**
+ * Cópia profunda do content. Não usa structuredClone: no wizard o content é
+ * um `ref` do Vue, ou seja, um Proxy reativo, e structuredClone rejeita
+ * Proxy com DataCloneError — o que fazia toda edição ser descartada em
+ * silêncio. O content é JSON (vai e volta da API assim), então a ida e volta
+ * por JSON é exata e atravessa o Proxy.
+ */
+function cloneContent(obj: Record<string, unknown>): Record<string, unknown> {
+  return JSON.parse(JSON.stringify(obj)) as Record<string, unknown>;
+}
+
 /** Acrescenta um item vazio ao grupo repetível, devolvendo um content novo. */
 export function addItem(content: Record<string, unknown>, path: string): Record<string, unknown> {
-  const clone = structuredClone(content);
+  const clone = cloneContent(content);
   const keys = path.split('.');
   let cur = clone as Record<string, unknown>;
   for (let i = 0; i < keys.length - 1; i++) {
@@ -303,7 +314,7 @@ export function addItem(content: Record<string, unknown>, path: string): Record<
 
 /** Remove o item de índice `index` do grupo repetível, devolvendo um content novo. */
 export function removeItem(content: Record<string, unknown>, path: string, index: number): Record<string, unknown> {
-  const clone = structuredClone(content);
+  const clone = cloneContent(content);
   const keys = path.split('.');
   let cur = clone as Record<string, unknown>;
   for (let i = 0; i < keys.length - 1; i++) {
@@ -424,7 +435,7 @@ export function initialContentFor(type: ScreeningType, patient: PatientSnapshot)
 
 export function setAt(obj: Record<string, unknown>, path: string, value: string): Record<string, unknown> {
   const keys = path.split('.');
-  const clone = structuredClone(obj);
+  const clone = cloneContent(obj);
   let cur = clone as Record<string, unknown>;
   for (let i = 0; i < keys.length - 1; i++) {
     const k = keys[i]!; // i < keys.length garante que sempre existe

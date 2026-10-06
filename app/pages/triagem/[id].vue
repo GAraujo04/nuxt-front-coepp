@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useQueryClient } from '@tanstack/vue-query';
 import { usePatients } from '../../composables/usePatients';
 import { useSaveScreeningDraft, useScreening } from '../../composables/useScreenings';
 import { useTransition } from '../../composables/useDocuments';
@@ -30,6 +31,7 @@ const route = useRoute();
 const id = computed(() => route.params.id as string);
 const query = useScreening(id);
 const save = useSaveScreeningDraft();
+const qc = useQueryClient();
 const transition = useTransition();
 const patients = usePatients();
 
@@ -43,14 +45,19 @@ const step = ref(0);
 const savedAt = ref<string | null>(null);
 const missing = ref<{ step: string; label: string }[]>([]);
 const dirty = ref(false);
+const loadedId = ref<string | null>(null);
 
 watch(
   () => query.data.value,
   (data) => {
-    if (data) {
-      content.value = data.content ?? {};
-      version.value = data.version;
-    }
+    if (!data) return;
+    // Mesmo documento na mesma versão que já está na tela = eco do nosso
+    // próprio auto-save (ver onSuccess abaixo). Sobrescrever o content aqui
+    // apagaria o que foi digitado enquanto o save estava em voo.
+    if (data.id === loadedId.value && data.version === version.value) return;
+    loadedId.value = data.id;
+    content.value = data.content ?? {};
+    version.value = data.version;
   },
   { immediate: true },
 );
@@ -72,6 +79,13 @@ watch(content, () => {
       {
         onSuccess: (updated) => {
           version.value = updated.version;
+          // Mantém o cache em dia com o que foi salvo. Sem isso, sair do
+          // documento e voltar dentro do staleTime reabria o conteúdo e a
+          // versão de ANTES do auto-save — as edições sumiam e o save
+          // seguinte dava conflito de versão. Vem depois de `version` para
+          // o watch acima reconhecer o eco e não mexer no content.
+          qc.setQueryData(['screening', updated.id], updated);
+          qc.invalidateQueries({ queryKey: ['screenings'] });
           savedAt.value = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
           dirty.value = false;
         },

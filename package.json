@@ -14,7 +14,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "api:sync": "node scripts/sync-api-contract.mjs",
-    "api:types": "openapi-typescript docs/api/openapi.yaml -o app/shared/api/schema.d.ts",
+    "api:types": "openapi-typescript docs/api/openapi.json -o app/shared/api/schema.d.ts",
     "lint": "eslint .",
     "typecheck": "nuxt typecheck",
     "test": "vitest run"

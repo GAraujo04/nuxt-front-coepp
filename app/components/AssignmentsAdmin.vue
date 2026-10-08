@@ -28,6 +28,11 @@ function isDirty(a: AssignmentView) {
   if (!e) return false;
   return (e.internId !== undefined && e.internId !== a.internId) || (e.supervisorId !== undefined && e.supervisorId !== (a.supervisorId ?? ''));
 }
+function end(a: AssignmentView) {
+  // Confirmação nativa: ação rara sobre a agenda, sem desfazer.
+  if (!window.confirm(`Encerrar o vínculo de ${a.patientName} com ${a.internName}? As consultas futuras serão canceladas.`)) return;
+  update.mutate({ id: a.id, active: false });
+}
 function save(a: AssignmentView) {
   const e = edited[a.id];
   if (!e) return;
@@ -47,11 +52,13 @@ function save(a: AssignmentView) {
     <h2 class="mb-4 text-lg font-semibold text-body">Vínculos (paciente ↔ estagiário ↔ supervisor)</h2>
     <p class="mb-4 text-xs text-muted">
       O vínculo inicial é criado pelo pareamento (automático ou manual). Aqui você corrige um vínculo já existente —
-      troca de estagiário ou de supervisor.
+      troca de estagiário ou de supervisor — ou o encerra. Ao trocar o estagiário, as consultas futuras passam para o
+      novo, no mesmo horário; ao encerrar, elas são canceladas.
     </p>
     <p v-if="assignments.data.value && assignments.data.value.length === 0" class="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted">
       Nenhum vínculo ainda. Eles surgem do pareamento.
     </p>
+    <p v-if="update.isError.value" class="mb-3 text-sm text-danger">Não foi possível salvar o vínculo. Atualize a página e tente novamente.</p>
     <ul class="space-y-2">
       <li v-for="a in assignments.data.value" :key="a.id" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface p-4 shadow-sm">
         <p class="text-sm font-medium text-body">{{ a.patientName }}</p>
@@ -78,6 +85,13 @@ function save(a: AssignmentView) {
             @click="save(a)"
           >
             Salvar
+          </button>
+          <button
+            :disabled="update.isPending.value"
+            class="rounded-md border border-border px-3 py-1.5 text-sm text-danger hover:bg-surface2 disabled:opacity-50"
+            @click="end(a)"
+          >
+            Encerrar
           </button>
         </div>
       </li>

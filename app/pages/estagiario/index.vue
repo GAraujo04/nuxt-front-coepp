@@ -63,6 +63,10 @@ function formatDateTime(iso: string) {
               {{ formatDateTime(appt.scheduledAt) }}
               <span v-if="appt.roomName" class="ml-2 font-normal text-muted">· {{ appt.roomName }}</span>
             </p>
+            <p v-if="appt.patientCode" class="text-xs text-muted">
+              Paciente
+              <NuxtLink :to="`/prontuario/${appt.patientId}`" class="font-mono text-link hover:underline">{{ appt.patientCode }}</NuxtLink>
+            </p>
             <p v-if="!appt.roomName" class="text-xs text-muted">Sala não definida</p>
             <span class="pill mt-1" :class="STATUS_PILL[appt.status]">{{ STATUS_LABEL[appt.status] }}</span>
           </div>

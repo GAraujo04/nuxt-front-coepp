@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useReviewDoc, useTransition } from '../../composables/useDocuments';
 import { getAt, stepsFor } from '../../shared/screening/fields';
+import { apiErrorCode } from '../../shared/api/error-code';
 import type { ScreeningType } from '../../composables/useScreenings';
 
 definePageMeta({ layout: 'authenticated', middleware: 'require-role', roles: ['SUPERVISOR'] });
@@ -90,6 +91,13 @@ function formatDateTime(iso: string) {
         class="mb-3 min-h-20 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-body focus:border-link focus:outline-none"
         placeholder="Comentário (obrigatório para solicitar ajustes ou rejeitar)"
       />
+      <p v-if="transition.isError.value" class="mb-3 text-sm text-danger">
+        {{
+          apiErrorCode(transition.error.value) === 'forbidden'
+            ? 'Você não supervisiona este paciente.'
+            : 'Não foi possível registrar o parecer. Atualize a página e tente novamente.'
+        }}
+      </p>
       <div class="flex flex-wrap gap-2">
         <button
           :disabled="transition.isPending.value"

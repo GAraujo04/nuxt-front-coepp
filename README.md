@@ -10,15 +10,16 @@ tempo é reescrito de React pra Vue/Nuxt (ADR-0004). O motivo não é técnico:
 
 ## Este repo não define nada sozinho
 
-- **Não define o contrato de API.** Consome a API do `pep-main`
-  (`apps/api`, Fastify) pelo contrato gerado em `docs/api/openapi.yaml`
-  daquele repo. Nunca redefine rota, schema ou regra de negócio aqui.
+- **Não define o contrato de API.** Consome a API do backend
+  (`python-back-coepp`, FastAPI) pelo contrato que ele gera das próprias
+  rotas (`docs/api/openapi.json` daquele repo). Nunca redefine rota, schema
+  ou regra de negócio aqui.
 - **Não decide regra de autorização/negócio.** Guards de rota aqui são só
   UX — a autorização real (RLS, checagem de papel) é sempre no backend.
 - **A cópia do contrato de API é vendorizada**, não consumida ao vivo por
-  URL — ver `docs/api/openapi.yaml` neste repo (cópia local) e o script
-  `npm run api:sync` (a definir/documentar quando a primeira feature migrar)
-  pra atualizá-la a partir do `pep-main`.
+  URL — ver `docs/api/openapi.json` neste repo, atualizado com
+  `npm run api:sync` (copia do backend, pasta irmã) e, se quiser os tipos
+  TS, `npm run api:types`.
 
 ## Onde estão as decisões e o plano
 

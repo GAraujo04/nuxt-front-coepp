@@ -25,7 +25,17 @@ const TABS = Object.keys(TAB_LABEL) as Tab[];
 const EMPTY = { fullName: '', email: '', password: '', phone: '', crp: '', department: '' };
 const inputClass = 'w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-body focus:border-link focus:outline-none';
 
-const tab = ref<Tab>('users');
+// Aba inicial pela URL (?tab=matching…): os avisos do sininho levam direto
+// à aba que resolve a pendência.
+const route = useRoute();
+const tabFromRoute = route.query.tab as string | undefined;
+const tab = ref<Tab>(tabFromRoute && tabFromRoute in TAB_LABEL ? (tabFromRoute as Tab) : 'users');
+watch(
+  () => route.query.tab,
+  (t) => {
+    if (typeof t === 'string' && t in TAB_LABEL) tab.value = t as Tab;
+  },
+);
 const form = reactive({ ...EMPTY });
 const create = useCreateUser();
 const interns = useUsersByRole('INTERN');

@@ -26,6 +26,7 @@ const NAV_LINKS_BY_ROLE: Record<Role, NavItem[]> = {
   SUPERVISOR: [
     { to: '/supervisao', labelKey: 'nav.dashboard' },
     { to: '/revisao', labelKey: 'nav.reviewQueue' },
+    { to: '/relatorios', labelKey: 'nav.reports' },
   ],
   ADMIN: [{ to: '/admin', labelKey: 'nav.dashboard' }],
   PATIENT: [{ to: '/paciente', labelKey: 'nav.dashboard' }],
@@ -36,6 +37,9 @@ const { user } = useAuth();
 const store = useAuthStore();
 
 const links = computed(() => (user.value ? NAV_LINKS_BY_ROLE[user.value.role] : []));
+// Paciente não tem avisos (nada a revisar nem a decidir): sem sininho, e
+// sem a consulta periódica que ele faria.
+const showBell = computed(() => !!user.value && user.value.role !== 'PATIENT');
 
 async function handleLogout() {
   try {
@@ -70,6 +74,7 @@ async function handleLogout() {
         </NuxtLink>
       </nav>
       <div class="flex items-center gap-4 text-sm">
+        <NotificationBell v-if="showBell" />
         <!-- text-fsa-header-*, não text-muted/text-link/text-body: este
              header usa --fsa-superficie (fixo, claro) como fundo em
              qualquer tema — os tokens reativos ao tema ficam ilegíveis

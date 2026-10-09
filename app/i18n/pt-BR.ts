@@ -19,6 +19,7 @@ export default {
     records: 'Prontuários',
     supervision: 'Supervisão',
     reviewQueue: 'Fila de Revisão',
+    reports: 'Relatórios',
     availability: 'Minha Disponibilidade',
     logout: 'Sair',
   },

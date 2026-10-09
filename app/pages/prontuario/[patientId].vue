@@ -48,13 +48,23 @@ const DISABILITY_LABEL: Record<string, string> = {
 
 const route = useRoute();
 const { user } = useAuth();
-const patientId = computed(() => route.params.patientId as string);
+// O parâmetro aceita o id interno (é o que os links usam) ou o código do
+// paciente (ex.: /prontuario/20260003) — o código é o que as pessoas
+// conhecem e digitam.
+const routeParam = computed(() => route.params.patientId as string);
 const patients = usePatients();
 const screenings = useScreenings();
 const create = useCreateScreening();
 const opening = ref<string | null>(null);
 
-const patient = computed(() => patients.data.value?.find((p) => p.id === patientId.value));
+const patient = computed(() =>
+  patients.data.value?.find((p) => p.id.toLowerCase() === routeParam.value.toLowerCase() || p.code === routeParam.value),
+);
+const patientId = computed(() => patient.value?.id ?? '');
+// A lista vem só com os pacientes vinculados a este estagiário (escopo do
+// backend): não achar aqui = não existe OU não é dele. A tela não distingue
+// os dois de propósito, para não confirmar que um código existe.
+const notFound = computed(() => patients.isSuccess.value && !patient.value);
 const docs = computed(() => screenings.data.value?.filter((s) => s.patientId === patientId.value) ?? []);
 
 /** Documento que ocupa o slot, se já foi iniciado. */
@@ -76,6 +86,7 @@ function formatDateTime(iso: string) {
 }
 
 async function openSlot(slot: DocSlot) {
+  if (!patient.value) return;
   const existing = docOf(slot);
   if (existing) return navigateTo(`/triagem/${existing.id}`);
 
@@ -104,6 +115,13 @@ async function openSlot(slot: DocSlot) {
 <template>
   <div class="mx-auto max-w-3xl">
     <NuxtLink to="/estagiario" class="mb-3 inline-block text-sm font-medium text-link hover:underline">← Voltar aos meus pacientes</NuxtLink>
+
+    <p v-if="patients.isError.value" class="text-sm text-danger">Não foi possível carregar o paciente. Tente novamente.</p>
+    <div v-else-if="notFound" class="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted">
+      Paciente não encontrado ou não vinculado a você. Confira o código (8 dígitos, ex.: 20260003) ou abra o paciente
+      pela lista em “Meus pacientes”.
+    </div>
+    <template v-else>
 
     <div class="mb-5">
       <!-- Listas mostram só o código (ver patientDisplayName); aqui, no
@@ -176,6 +194,7 @@ async function openSlot(slot: DocSlot) {
           </NuxtLink>
         </li>
       </ul>
+    </template>
     </template>
   </div>
 </template>

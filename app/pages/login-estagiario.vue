@@ -4,7 +4,7 @@ import { useInternLogin } from '../composables/useInternLogin';
 import { applyMask, maskUsuarioRm, MASK_LENGTH } from '../shared/lib/masks';
 import { apiErrorCode } from '../shared/api/error-code';
 
-type ErrorKind = 'invalid' | 'forbidden' | 'unavailable' | 'rate-limited' | null;
+type ErrorKind = 'invalid' | 'format' | 'forbidden' | 'unavailable' | 'rate-limited' | null;
 
 function errorKindFrom(error: unknown): ErrorKind {
   const code = apiErrorCode(error);
@@ -12,7 +12,10 @@ function errorKindFrom(error: unknown): ErrorKind {
   if (code === 'forbidden') return 'forbidden';
   if (code === 'service_unavailable') return 'unavailable';
   if (code === 'rate_limited') return 'rate-limited';
-  // unauthorized (credencial inválida) e validation_failed (formato/vínculo) usam a mesma mensagem genérica.
+  // validation_failed aqui é o formato do usuário (11 dígitos) — esta tela
+  // não envia e-mail de vínculo. Antes caía em "senha inválida", e o aluno
+  // ia trocar uma senha que estava certa.
+  if (code === 'validation_failed') return 'format';
   return 'invalid';
 }
 
@@ -27,12 +30,16 @@ if (isAuthenticated.value) await navigateTo('/', { replace: true });
 // computed em vez de recalcular "a cada render" (não existe render aqui) —
 // só reavalia quando login.isError ou login.error mudam de valor.
 const errorKind = computed<ErrorKind>(() => (login.isError.value ? errorKindFrom(login.error.value) : null));
+const shortUser = ref(false);
 
 function onInputUsuarioRm(e: Event) {
   usuarioRm.value = applyMask(e, maskUsuarioRm);
 }
 
 async function onSubmit() {
+  // Checado antes de ir ao TOTVS: o backend recusaria do mesmo jeito.
+  shortUser.value = usuarioRm.value.length !== MASK_LENGTH.usuarioRm;
+  if (shortUser.value) return;
   login.mutate(
     { usuarioRm: usuarioRm.value, senhaRm: senhaRm.value, linkEmail: linkEmail.value.trim() || undefined },
     {
@@ -63,6 +70,7 @@ async function onSubmit() {
             required
             @input="onInputUsuarioRm"
           >
+          <p class="mt-1 text-xs text-muted">Seu usuário do portal acadêmico: {{ MASK_LENGTH.usuarioRm }} números.</p>
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-body">Senha</label>
@@ -75,7 +83,10 @@ async function onSubmit() {
           >
         </div>
 
-        <p v-if="errorKind === 'invalid'" class="pill-danger rounded px-2 py-1 text-sm">Usuário ou senha inválidos.</p>
+        <p v-if="shortUser || errorKind === 'format'" class="pill-danger rounded px-2 py-1 text-sm">
+          O usuário deve ter exatamente {{ MASK_LENGTH.usuarioRm }} números (você digitou {{ usuarioRm.length }}).
+        </p>
+        <p v-else-if="errorKind === 'invalid'" class="pill-danger rounded px-2 py-1 text-sm">Usuário ou senha inválidos.</p>
         <p v-else-if="errorKind === 'forbidden'" class="pill-muted rounded px-2 py-1 text-sm">
           Este login é exclusivo para alunos/estagiários. Se você é funcionário ou professor, procure o Administrativo.
         </p>

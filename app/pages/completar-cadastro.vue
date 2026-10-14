@@ -3,6 +3,7 @@ import { applyMask, maskRA, MASK_LENGTH } from '../shared/lib/masks';
 import { useAuthStore } from '../stores/auth';
 import { api } from '../shared/api/client';
 import { useCompleteInternProfile, useRegistrationOptions, useResponsibilityTerm } from '../composables/useEnrollment';
+import { fillTerm } from '../shared/lib/responsibility-term';
 import type { AvailabilityWindowValue } from '../components/WeeklyAvailabilityPicker.vue';
 
 // Só require-role aqui (não require-profile-complete) — senão o próprio
@@ -36,6 +37,10 @@ const form = reactive({
   turma: '',
 });
 const windows = ref<AvailabilityWindowValue[]>([{ weekday: 1, startTime: '', endTime: '' }]);
+// Termo com o nome do cadastro (veio do TOTVS no 1º acesso) e a data de hoje.
+const termText = computed(() =>
+  term.data.value ? fillTerm(term.data.value.content, { name: user.value?.fullName, date: new Date() }) : '',
+);
 const termModalOpen = ref(false);
 const termOpened = ref(false);
 const termAccepted = ref(false);
@@ -192,7 +197,7 @@ function onSubmit() {
     <BaseModal :open="termModalOpen" title="Termo de responsabilidade" @close="termModalOpen = false">
       <p v-if="term.isLoading.value" class="text-sm text-muted">Carregando…</p>
       <p v-else-if="term.isError.value" class="text-sm text-danger">Não foi possível carregar o termo agora. Tente novamente.</p>
-      <div v-else-if="term.data.value" class="whitespace-pre-wrap text-sm text-body">{{ term.data.value.content }}</div>
+      <div v-else-if="term.data.value" class="whitespace-pre-wrap text-sm text-body">{{ termText }}</div>
     </BaseModal>
   </div>
 </template>

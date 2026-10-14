@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { applyMask, maskRA, MASK_LENGTH } from '../../shared/lib/masks';
 import { useRegisterStudent, useRegistrationOptions, useResponsibilityTerm } from '../../composables/useEnrollment';
+import { fillTerm } from '../../shared/lib/responsibility-term';
 import type { AvailabilityWindowValue } from '../../components/WeeklyAvailabilityPicker.vue';
 
 // Página PÚBLICA: o aluno se cadastra escolhendo supervisor, disciplina, período e turma.
@@ -25,6 +26,10 @@ const form = reactive({
   turma: '',
 });
 const windows = ref<AvailabilityWindowValue[]>([{ weekday: 1, startTime: '', endTime: '' }]);
+// Termo com nome (o que o aluno digitou acima) e data de hoje já preenchidos.
+const termText = computed(() =>
+  term.data.value ? fillTerm(term.data.value.content, { name: form.fullName, date: new Date() }) : '',
+);
 const termModalOpen = ref(false);
 const termOpened = ref(false); // já abriu o modal ao menos uma vez
 const termAccepted = ref(false);
@@ -178,7 +183,7 @@ function onSubmit() {
     <BaseModal :open="termModalOpen" title="Termo de responsabilidade" @close="termModalOpen = false">
       <p v-if="term.isLoading.value" class="text-sm text-muted">Carregando…</p>
       <p v-else-if="term.isError.value" class="text-sm text-danger">Não foi possível carregar o termo agora. Tente novamente.</p>
-      <div v-else-if="term.data.value" class="whitespace-pre-wrap text-sm text-body">{{ term.data.value.content }}</div>
+      <div v-else-if="term.data.value" class="whitespace-pre-wrap text-sm text-body">{{ termText }}</div>
     </BaseModal>
   </div>
 </template>

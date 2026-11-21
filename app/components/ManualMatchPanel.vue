@@ -64,7 +64,7 @@ function formatDateTime(iso: string) {
       <p class="mb-2 text-xs font-semibold text-muted">Sugestões do sistema (não persistidas)</p>
       <ul class="space-y-1 text-xs text-muted">
         <li v-for="s in suggestions.data.value" :key="`${s.patientId}-${s.internId}`">
-          {{ s.internName }} <span class="text-body">↔</span> {{ s.patientName }} — {{ s.roomName }} — {{ formatDateTime(s.scheduledAt) }}
+          {{ s.internName }} <span class="text-body">↔</span> Paciente Nº {{ s.patientCode }} — {{ s.roomName }} — {{ formatDateTime(s.scheduledAt) }}
         </li>
       </ul>
     </div>
@@ -74,7 +74,7 @@ function formatDateTime(iso: string) {
         <span class="mb-1 block font-medium text-body">Paciente</span>
         <select v-model="form.patientId" :class="fieldClass" required @change="clearFeedback">
           <option value="">Selecione…</option>
-          <option v-for="p in patients.data.value" :key="p.id" :value="p.id">{{ p.code }} — {{ p.fullName }}</option>
+          <option v-for="p in patients.data.value" :key="p.id" :value="p.id">Nº {{ p.code }}</option>
         </select>
       </label>
       <label class="block text-sm">

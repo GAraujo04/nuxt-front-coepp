@@ -4,6 +4,7 @@ import { api } from '../shared/api/client';
 export type NotificationKind =
   | 'REVIEW_QUEUE'
   | 'AVAILABILITY_REQUESTS'
+  | 'AVAILABILITY_CHANGED'
   | 'PENDING_MATCHES'
   | 'ASSIGNMENTS_WITHOUT_SUPERVISOR'
   | 'CHANGES_REQUESTED'

@@ -2,9 +2,10 @@
 import { useAvailabilityRequests, useDecideAvailabilityRequest } from '../composables/useEnrollment';
 
 // Pedidos de mudança de disponibilidade dos estagiários e liberações em
-// vigor. O supervisor vê só os estagiários pelos quais responde; o
-// administrativo vê todos (filtro feito no backend). A liberação vale por
-// um prazo e para UM salvamento — depois a disponibilidade trava de novo.
+// vigor — só do supervisor, e só dos estagiários pelos quais ele responde
+// (filtro no backend). O administrativo não decide: vê a alteração já feita
+// em AvailabilityChanges. A liberação vale por um prazo e para UM
+// salvamento — depois a disponibilidade trava de novo.
 const HOURS_OPTIONS = [24, 48, 72, 168];
 
 const requests = useAvailabilityRequests();

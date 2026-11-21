@@ -34,8 +34,16 @@ export function useRooms(opts: { includeInactive?: boolean } = {}) {
   const includeInactive = !!opts.includeInactive;
   return useQuery({
     queryKey: ['rooms', { includeInactive }],
-    queryFn: async () => (await api.get<RoomStatus[]>('/rooms', { params: { includeInactive } })).data,
+    queryFn: async () =>
+      sortRooms((await api.get<RoomStatus[]>('/rooms', { params: { includeInactive } })).data),
   });
+}
+
+// Ordem natural ("Sala 2" antes de "Sala 10"): o banco ordena o nome como
+// texto. Ativas primeiro, como o backend já devolve.
+const byName = new Intl.Collator('pt-BR', { numeric: true, sensitivity: 'base' });
+export function sortRooms<T extends { name: string; active: boolean }>(rooms: T[]): T[] {
+  return [...rooms].sort((a, b) => Number(b.active) - Number(a.active) || byName.compare(a.name, b.name));
 }
 
 /** Cadastra uma sala nova. */

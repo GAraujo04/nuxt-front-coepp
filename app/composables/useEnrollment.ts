@@ -164,7 +164,7 @@ export interface AvailabilityRequest {
   unlockedUntil: string | null;
 }
 
-/** Pedidos de mudança de disponibilidade e liberações em vigor (Supervisor: os seus; Admin: todos). */
+/** Pedidos de mudança de disponibilidade e liberações em vigor dos estagiários do supervisor. */
 export function useAvailabilityRequests() {
   return useQuery({
     queryKey: ['availability-requests'],
@@ -172,7 +172,27 @@ export function useAvailabilityRequests() {
   });
 }
 
-/** Libera (por `hours`) ou trava de novo a disponibilidade de um estagiário. */
+export interface AvailabilityChange {
+  internId: string;
+  internName: string;
+  ra: string | null;
+  changedAt: string;
+  /** A disponibilidade nova (a atual). */
+  windows: AvailabilityWindowPayload[];
+}
+
+/**
+ * Alterações de disponibilidade dos últimos 30 dias (Admin). Liberar a
+ * mudança é do supervisor; o administrativo só precisa do horário novo.
+ */
+export function useAvailabilityChanges() {
+  return useQuery({
+    queryKey: ['availability-changes'],
+    queryFn: async () => (await api.get<AvailabilityChange[]>('/availability-changes')).data,
+  });
+}
+
+/** Libera (por `hours`) ou trava de novo a disponibilidade de um estagiário (Supervisor). */
 export function useDecideAvailabilityRequest() {
   const qc = useQueryClient();
   return useMutation({

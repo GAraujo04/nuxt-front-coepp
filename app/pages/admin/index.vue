@@ -77,7 +77,7 @@ function onSubmit() {
     <DisciplinasAdmin v-if="tab === 'disciplinas'" />
     <template v-else-if="tab === 'matching'">
       <PendingMatchAlerts />
-      <MatchesList can-run />
+      <MatchProposals />
       <ManualMatchPanel />
     </template>
     <AttendancePeriodAdmin v-else-if="tab === 'periodo'" />
@@ -134,7 +134,7 @@ function onSubmit() {
 
       <PendingSupervisors :supervisors="supervisors.data.value" />
 
-      <AvailabilityRequests />
+      <AvailabilityChanges />
 
       <div class="grid gap-6 lg:grid-cols-3">
         <AdminList title="Estagiários" :rows="interns.data.value?.map((u) => ({ id: u.id, main: u.fullName, sub: `RA ${u.ra ?? '—'}` }))" />

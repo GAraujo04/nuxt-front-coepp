@@ -76,8 +76,8 @@ function onSubmit() {
 
     <DisciplinasAdmin v-if="tab === 'disciplinas'" />
     <template v-else-if="tab === 'matching'">
-      <PendingMatchAlerts />
       <MatchProposals />
+      <UnmatchedPanel />
       <ManualMatchPanel />
     </template>
     <AttendancePeriodAdmin v-else-if="tab === 'periodo'" />

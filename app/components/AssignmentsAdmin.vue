@@ -30,7 +30,7 @@ function isDirty(a: AssignmentView) {
 }
 function end(a: AssignmentView) {
   // Confirmação nativa: ação rara sobre a agenda, sem desfazer.
-  if (!window.confirm(`Encerrar o vínculo de ${a.patientName} com ${a.internName}? As consultas futuras serão canceladas.`)) return;
+  if (!window.confirm(`Encerrar o vínculo do paciente Nº ${a.patientCode} com ${a.internName}? As consultas futuras serão canceladas.`)) return;
   update.mutate({ id: a.id, active: false });
 }
 function save(a: AssignmentView) {
@@ -61,7 +61,7 @@ function save(a: AssignmentView) {
     <p v-if="update.isError.value" class="mb-3 text-sm text-danger">Não foi possível salvar o vínculo. Atualize a página e tente novamente.</p>
     <ul class="space-y-2">
       <li v-for="a in assignments.data.value" :key="a.id" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface p-4 shadow-sm">
-        <p class="text-sm font-medium text-body">{{ a.patientName }}</p>
+        <p class="text-sm font-medium text-body">Paciente <span class="font-mono">Nº {{ a.patientCode }}</span></p>
         <div class="flex flex-wrap items-center gap-2">
           <label class="text-xs text-muted">
             Estagiário

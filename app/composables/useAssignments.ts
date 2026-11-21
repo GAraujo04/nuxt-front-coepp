@@ -3,7 +3,8 @@ import { api } from '../shared/api/client';
 
 export interface AssignmentView {
   id: string;
-  patientName: string;
+  /** Só o código: a tela de vínculos não identifica o paciente pelo nome. */
+  patientCode: string;
   internId: string;
   internName: string;
   supervisorId: string | null;

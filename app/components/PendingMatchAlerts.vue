@@ -27,7 +27,7 @@ function formatDateTime(iso: string) {
     <ul class="space-y-2">
       <li v-for="r in pending.data.value" :key="r.id" class="flex flex-wrap items-center justify-between gap-3 rounded-md bg-surface2 p-3 text-sm">
         <div>
-          <p class="font-medium text-body">{{ r.patientName }}</p>
+          <p class="font-medium text-body">Paciente <span class="font-mono">Nº {{ r.patientCode }}</span></p>
           <p v-if="r.suggestedInternName && r.suggestedAt" class="text-xs text-muted">
             Sugestão: {{ r.suggestedInternName }}, {{ formatDateTime(r.suggestedAt) }}
           </p>

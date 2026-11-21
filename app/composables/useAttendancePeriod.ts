@@ -22,21 +22,23 @@ export function useAttendancePeriod() {
   });
 }
 
-/** Define início e fim dos atendimentos do ciclo. */
+export interface SavedAttendancePeriod extends AttendancePeriod {
+  /** O que salvar agendou nos pares que já existiam. */
+  series: SeriesResult;
+}
+
+/**
+ * Define início e fim dos atendimentos do ciclo. O backend já completa,
+ * na mesma operação, a agenda semanal dos pares ativos até o novo fim
+ * (idempotente — semanas já agendadas são puladas).
+ */
 export function useSetAttendancePeriod() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: AttendancePeriod) => (await api.put<AttendancePeriod>('/settings/attendance-period', p)).data,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['attendance-period'] }),
-  });
-}
-
-/** Agenda as consultas semanais dos vínculos existentes até o fim do período (idempotente). */
-export function useGenerateSeries() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async () => (await api.post<SeriesResult>('/appointments/generate-series')).data,
+    mutationFn: async (p: AttendancePeriod) =>
+      (await api.put<SavedAttendancePeriod>('/settings/attendance-period', p)).data,
     onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['attendance-period'] });
       qc.invalidateQueries({ queryKey: ['matches'] });
       qc.invalidateQueries({ queryKey: ['rooms'] });
     },

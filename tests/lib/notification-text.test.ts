@@ -24,6 +24,10 @@ describe('describeNotification', () => {
     expect(describeNotification({ ...base, kind: 'ASSIGNMENTS_WITHOUT_SUPERVISOR', count: 2 }).to).toBe(
       '/admin?tab=assignments',
     );
+    expect(describeNotification({ ...base, kind: 'AVAILABILITY_CHANGED', count: 2 })).toEqual({
+      text: '2 estagiários alteraram a disponibilidade',
+      to: '/admin?tab=users',
+    });
   });
 
   it('tipo desconhecido não quebra a tela', () => {

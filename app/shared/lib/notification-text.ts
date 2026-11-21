@@ -42,9 +42,12 @@ export function describeNotification(n: NotificationLike): NotificationView {
     case 'AVAILABILITY_REQUESTS':
       return {
         text: `${n.count} ${plural(n.count, 'pedido', 'pedidos')} de alteração de disponibilidade`,
-        // Supervisor e admin veem o painel de pedidos em telas diferentes;
-        // o componente de layout troca o destino pelo papel.
         to: '/supervisao',
+      };
+    case 'AVAILABILITY_CHANGED':
+      return {
+        text: `${n.count} ${plural(n.count, 'estagiário alterou', 'estagiários alteraram')} a disponibilidade`,
+        to: '/admin?tab=users',
       };
     case 'PENDING_MATCHES':
       return {

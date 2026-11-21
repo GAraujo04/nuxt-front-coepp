@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { useMarkNotificationsSeen, useNotifications } from '../composables/useNotifications';
-import type { AppNotification } from '../composables/useNotifications';
 import { describeNotification } from '../shared/lib/notification-text';
 
 // Sininho do cabeçalho: pendências (somem quando resolvidas) e
 // informativos (contam até a lista ser aberta). Tudo calculado pelo
 // backend a partir do estado do sistema — sem e-mail nem push.
-const { user } = useAuth();
 const notifications = useNotifications();
 const markSeen = useMarkNotificationsSeen();
 const open = ref(false);
@@ -14,13 +12,6 @@ const root = ref<HTMLElement | null>(null);
 
 const unread = computed(() => notifications.data.value?.unread ?? 0);
 const items = computed(() => notifications.data.value?.items ?? []);
-
-function target(n: AppNotification) {
-  const view = describeNotification(n);
-  // O painel de pedidos de disponibilidade do admin fica na aba Usuários.
-  if (n.kind === 'AVAILABILITY_REQUESTS' && user.value?.role === 'ADMIN') return { ...view, to: '/admin?tab=users' };
-  return view;
-}
 
 function toggle() {
   open.value = !open.value;
@@ -77,14 +68,14 @@ onUnmounted(() => {
       <p v-else-if="items.length === 0" class="px-4 py-6 text-center text-sm text-muted">Nada pendente por aqui.</p>
       <ul v-else class="max-h-96 overflow-y-auto">
         <li v-for="(n, i) in items" :key="`${n.kind}-${n.documentId ?? i}`" class="border-b border-border last:border-0">
-          <button type="button" class="flex w-full items-start gap-2 px-4 py-3 text-left text-sm hover:bg-surface2" @click="go(target(n).to)">
+          <button type="button" class="flex w-full items-start gap-2 px-4 py-3 text-left text-sm hover:bg-surface2" @click="go(describeNotification(n).to)">
             <span
               class="mt-1.5 h-2 w-2 shrink-0 rounded-full"
               :class="n.actionable ? 'bg-amber-500' : n.unseen ? 'bg-blue-600' : 'bg-transparent'"
               aria-hidden="true"
             />
             <span class="text-body">
-              {{ target(n).text }}
+              {{ describeNotification(n).text }}
               <span v-if="n.actionable" class="block text-xs text-muted">Pendente</span>
             </span>
           </button>

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { api } from '../shared/api/client';
 
 // Pareamento. Admin: propostas (MatchProposals — rodar, salvar, cancelar),
-// alertas sem horário (PendingMatchAlerts) e match manual (ManualMatchPanel).
+// quem ficou sem par (UnmatchedPanel) e match manual (ManualMatchPanel).
 // Supervisor: consultas dos pares, só leitura (MatchesList).
 export interface MatchView {
   appointmentId: string;
@@ -36,7 +36,7 @@ export function useRunMatching() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['match-proposals'] });
       qc.invalidateQueries({ queryKey: ['match-suggestions'] });
-      qc.invalidateQueries({ queryKey: ['pending-match-requests'] });
+      qc.invalidateQueries({ queryKey: ['unmatched'] });
     },
   });
 }
@@ -89,6 +89,7 @@ export function useDiscardProposal() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['match-proposals'] });
       qc.invalidateQueries({ queryKey: ['match-suggestions'] });
+      qc.invalidateQueries({ queryKey: ['unmatched'] });
     },
   });
 }
@@ -111,30 +112,43 @@ export function useSuggestions() {
   });
 }
 
-export interface PendingMatchRequestView {
+export interface AvailabilityWindow {
+  weekday: number; // 0=domingo .. 6=sábado
+  startTime: string;
+  endTime: string;
+}
+export interface UnmatchedPatient {
   id: string;
-  patientCode: string;
-  suggestedInternName: string | null;
-  suggestedAt: string | null;
-  status: string;
-  createdAt: string;
+  code: string;
+  isMinor: boolean;
+  hasDisability: boolean;
+  windows: AvailabilityWindow[];
+  registeredAt: string;
+  /** Desde quando o pareamento não acha horário compatível; null = ainda não passou por uma rodada. */
+  noMatchSince: string | null;
+}
+export interface UnmatchedIntern {
+  id: string;
+  name: string;
+  ra: string | null;
+  windows: AvailabilityWindow[];
 }
 
-/** Alertas de fallback por aproximação — pacientes sem match exato na última rodada (Admin). */
-export function usePendingMatchRequests() {
+/** Pacientes e estagiários sem par, com a disponibilidade — para o pareamento manual (Admin). */
+export function useUnmatched() {
   return useQuery({
-    queryKey: ['pending-match-requests'],
-    queryFn: async () => (await api.get<PendingMatchRequestView[]>('/matching/pending-requests')).data,
+    queryKey: ['unmatched'],
+    queryFn: async () =>
+      (await api.get<{ patients: UnmatchedPatient[]; interns: UnmatchedIntern[] }>('/matching/unmatched')).data,
   });
 }
 
-/** Marca o alerta como resolvido — equipe já entrou em contato com o paciente (Admin). */
-export function useResolvePendingMatchRequest() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => api.patch(`/matching/pending-requests/${id}/resolve`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['pending-match-requests'] }),
-  });
+/**
+ * Quem o admin escolheu na lista de "sem par" para o match manual: o
+ * painel do match manual lê e preenche o formulário.
+ */
+export function useManualMatchPick() {
+  return useState<{ patientId?: string; internId?: string }>('manual-match-pick', () => ({}));
 }
 
 export interface ManualMatchWarning {
@@ -161,6 +175,8 @@ export function useCreateManualMatch() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['matches'] });
       qc.invalidateQueries({ queryKey: ['match-suggestions'] });
+      qc.invalidateQueries({ queryKey: ['unmatched'] });
+      qc.invalidateQueries({ queryKey: ['assignments'] });
       qc.invalidateQueries({ queryKey: ['rooms'] });
     },
   });

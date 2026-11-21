@@ -3,7 +3,7 @@ import { isAxiosError } from 'axios';
 import { useUsersByRole } from '../composables/useUsers';
 import { usePatients } from '../composables/usePatients';
 import { ROOM_CATEGORY_LABEL, useRooms } from '../composables/useRooms';
-import { useCreateManualMatch, useSuggestions } from '../composables/useMatching';
+import { useCreateManualMatch, useManualMatchPick, useSuggestions } from '../composables/useMatching';
 import type { ManualMatchWarning } from '../composables/useMatching';
 
 // Match manual (item 7 do escopo original): mostra os pares que o sistema
@@ -19,6 +19,17 @@ const rooms = useRooms();
 const createManual = useCreateManualMatch();
 
 const form = reactive({ patientId: '', internId: '', scheduledAt: '', roomId: '' });
+
+// "Parear manualmente" na lista de sem par (UnmatchedPanel) preenche aqui.
+const pick = useManualMatchPick();
+watch(
+  pick,
+  (p) => {
+    if (p.patientId) form.patientId = p.patientId;
+    if (p.internId) form.internId = p.internId;
+  },
+  { immediate: true, deep: true },
+);
 const pendingWarnings = ref<ManualMatchWarning[] | null>(null);
 const created = ref<{ appointmentId: string; warnings: ManualMatchWarning[] } | null>(null);
 
@@ -40,6 +51,7 @@ function submit(acknowledgeWarnings: boolean) {
       onSuccess: (data) => {
         pendingWarnings.value = null;
         created.value = data;
+        pick.value = {};
       },
       onError: (err) => {
         if (isAxiosError<{ warnings?: ManualMatchWarning[] }>(err) && err.response?.status === 409) {
@@ -56,7 +68,7 @@ function formatDateTime(iso: string) {
 </script>
 
 <template>
-  <section class="mt-8 space-y-4 border-t border-border pt-6">
+  <section id="match-manual" class="mt-8 scroll-mt-4 space-y-4 border-t border-border pt-6">
     <h3 class="text-sm font-semibold text-body">Match manual</h3>
     <p class="text-xs text-muted">Monta um match específico, sobrepondo a sugestão automática — para casos de prioridade no atendimento.</p>
 

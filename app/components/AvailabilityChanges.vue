@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { useAvailabilityChanges } from '../composables/useEnrollment';
+import { formatWindow } from '../shared/lib/weekdays';
 
 // Painel Admin: estagiários que alteraram a disponibilidade nos últimos 30
 // dias, com o horário NOVO. Liberar a alteração é do supervisor
 // (AvailabilityRequests, na tela dele); o administrativo só precisa saber
 // que mudou e em que horários o aluno passa a atender, para o pareamento.
-const WEEKDAY = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-
 const changes = useAvailabilityChanges();
 
 function formatDateTime(iso: string) {
@@ -41,7 +40,7 @@ function formatDateTime(iso: string) {
             :key="`${w.weekday}-${w.startTime}`"
             class="rounded-md bg-surface2 px-2 py-1 text-xs text-body"
           >
-            {{ WEEKDAY[w.weekday] }} · {{ w.startTime }}–{{ w.endTime }}
+            {{ formatWindow(w) }}
           </li>
         </ul>
       </li>

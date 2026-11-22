@@ -18,6 +18,8 @@ const run = useRunMatching();
 const confirm = useConfirmProposal();
 const discard = useDiscardProposal();
 const rooms = useRooms();
+// O pareamento só propõe par com sala livre: sem sala cadastrada, nada sai.
+const noRooms = computed(() => rooms.isSuccess.value && (rooms.data.value?.length ?? 0) === 0);
 
 /** ISO -> valor de <input type="datetime-local"> no fuso local. */
 function toLocalInput(iso: string) {
@@ -59,7 +61,7 @@ function onDiscard(p: MatchProposal) {
     <div class="mb-1 flex items-center justify-between gap-3">
       <h2 class="text-lg font-semibold text-body">Pareamento</h2>
       <button
-        :disabled="run.isPending.value"
+        :disabled="run.isPending.value || noRooms"
         class="rounded-md bg-primary px-3 py-2 text-sm font-medium text-onprimary hover:bg-primaryh disabled:opacity-60"
         @click="run.mutate()"
       >
@@ -71,6 +73,17 @@ function onDiscard(p: MatchProposal) {
       sai desta lista para Vínculos. Cancelar descarta a proposta.
     </p>
 
+    <p v-if="noRooms" class="mb-3 rounded-md border border-warn/40 bg-surface2 p-3 text-sm text-body">
+      Nenhuma sala cadastrada. O pareamento só forma pares com sala livre — cadastre as salas na aba
+      <NuxtLink to="/admin?tab=rooms" class="font-medium text-link hover:underline">Salas</NuxtLink> antes de rodar.
+    </p>
+    <p v-if="run.isError.value" class="mb-3 text-sm text-danger">
+      {{
+        apiErrorCode(run.error.value) === 'validation_failed'
+          ? 'Cadastre ao menos uma sala ativa antes de rodar o pareamento.'
+          : 'Não foi possível rodar o pareamento. Tente novamente.'
+      }}
+    </p>
     <p v-if="run.isSuccess.value" class="mb-3 text-sm text-ok">
       {{ run.data.value && run.data.value.matched > 0 ? `${run.data.value.matched} nova(s) proposta(s).` : 'Nenhuma proposta nova (sem horários coincidentes).' }}
     </p>

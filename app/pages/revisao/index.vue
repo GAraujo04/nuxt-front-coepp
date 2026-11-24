@@ -25,15 +25,15 @@ const queue = useReviewQueue();
       <li v-for="d in queue.data.value" :key="d.id">
         <NuxtLink
           :to="`/revisao/${d.id}`"
-          class="flex items-center justify-between rounded-lg border border-border bg-surface p-4 shadow-sm hover:border-link"
+          class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-surface p-4 shadow-sm hover:border-link"
         >
-          <div>
+          <div class="min-w-0">
             <p class="text-sm font-medium text-body">
               {{ TYPE_LABEL[d.type] ?? d.type }} <span class="ml-1 font-mono text-xs text-muted">Nº {{ d.patientCode }}</span>
             </p>
             <p class="text-xs text-muted">Estagiário: {{ d.authorName }}</p>
           </div>
-          <span class="pill" :class="PILL[d.status] ?? 'pill-muted'">{{ d.status }}</span>
+          <span class="pill shrink-0" :class="PILL[d.status] ?? 'pill-muted'">{{ d.status }}</span>
         </NuxtLink>
       </li>
     </ul>

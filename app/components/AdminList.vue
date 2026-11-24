@@ -13,9 +13,9 @@ defineProps<{ title: string; rows?: { id: string; main: string; sub: string }[] 
       {{ title }} <span v-if="rows" class="text-muted">({{ rows.length }})</span>
     </h2>
     <ul class="space-y-1 text-sm">
-      <li v-for="r in rows" :key="r.id" class="flex justify-between border-b border-border py-1 last:border-0">
-        <span class="text-body">{{ r.main }}</span>
-        <span class="text-muted">{{ r.sub }}</span>
+      <li v-for="r in rows" :key="r.id" class="flex justify-between gap-3 border-b border-border py-1 last:border-0">
+        <span class="min-w-0 break-words text-body">{{ r.main }}</span>
+        <span class="shrink-0 text-muted">{{ r.sub }}</span>
       </li>
       <li v-if="rows && rows.length === 0" class="text-muted">Nenhum cadastro.</li>
     </ul>

@@ -8,7 +8,7 @@ import { api } from '../shared/api/client';
 export interface PortalData {
   code: string;
   fullName: string;
-  appointments: { scheduledAt: string; status: string; internName: string }[];
+  appointments: { scheduledAt: string; status: string; internName: string; roomName: string | null }[];
   pendingSlots: string[];
 }
 

@@ -87,7 +87,7 @@ const backTo = computed(() => (patientIdFromRoute.value ? `/prontuario/${patient
     <h1 class="mb-4 text-lg font-semibold text-body">
       {{ choosingScreeningType ? 'Nova triagem' : `Novo documento — ${DOC_TYPE_LABEL[type]}` }}
     </h1>
-    <form class="space-y-5 rounded-lg border border-border bg-surface p-6 shadow-sm" @submit.prevent="onSubmit">
+    <form class="space-y-5 rounded-lg border border-border bg-surface p-4 shadow-sm sm:p-6" @submit.prevent="onSubmit">
       <!-- Paciente já resolvido pelo prontuário: mostra quem é, sem pedir de novo. -->
       <div v-if="patientIdFromRoute">
         <span class="mb-1 block text-sm font-semibold text-body">Paciente</span>

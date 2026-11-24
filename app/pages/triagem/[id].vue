@@ -136,7 +136,7 @@ function handleSubmit() {
     >
       ← Voltar ao prontuário
     </NuxtLink>
-    <div class="rounded-lg border border-border bg-surface p-6 shadow-sm">
+    <div class="rounded-lg border border-border bg-surface p-4 shadow-sm sm:p-6">
       <div class="mb-4 flex flex-wrap items-center gap-3">
         <span class="text-sm font-bold text-muted">
           {{ DOC_TYPE_LABEL[query.data.value.type] }} · Nº {{ patient?.code ?? '—' }}

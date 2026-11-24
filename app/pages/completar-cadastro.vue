@@ -92,7 +92,7 @@ function onSubmit() {
 
 <template>
   <div class="fsa-hero-bg flex min-h-screen items-center justify-center p-4">
-    <div class="w-full max-w-xl rounded-lg border border-border bg-surface p-8 shadow-sm">
+    <div class="w-full max-w-xl rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-8">
       <div class="mb-4 flex items-start justify-between gap-4">
         <div>
           <h1 class="mb-1 text-xl font-semibold text-body">Complete seu cadastro</h1>

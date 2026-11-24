@@ -63,18 +63,18 @@ function save(a: AssignmentView) {
       <li v-for="a in assignments.data.value" :key="a.id" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface p-4 shadow-sm">
         <p class="text-sm font-medium text-body">Paciente <span class="font-mono">Nº {{ a.patientCode }}</span></p>
         <div class="flex flex-wrap items-center gap-2">
-          <label class="text-xs text-muted">
+          <label class="flex w-full items-center gap-1 text-xs text-muted sm:w-auto">
             Estagiário
-            <select :class="`${selectClass} ml-1`" :value="valueFor(a, 'internId')" @change="setValue(a.id, 'internId', ($event.target as HTMLSelectElement).value)">
+            <select :class="`${selectClass} min-w-0 flex-1`" :value="valueFor(a, 'internId')" @change="setValue(a.id, 'internId', ($event.target as HTMLSelectElement).value)">
               <option v-for="i in interns.data.value" :key="i.id" :value="i.id">{{ i.fullName }}</option>
             </select>
           </label>
-          <label class="text-xs text-muted">
+          <label class="flex w-full items-center gap-1 text-xs text-muted sm:w-auto">
             Supervisor
             <!-- Sem opção "não atribuído": este seletor troca o supervisor, não
                  remove — desatribuir não faz parte do backend (update só
                  altera pra um valor novo). -->
-            <select :class="`${selectClass} ml-1`" :value="valueFor(a, 'supervisorId')" @change="setValue(a.id, 'supervisorId', ($event.target as HTMLSelectElement).value)">
+            <select :class="`${selectClass} min-w-0 flex-1`" :value="valueFor(a, 'supervisorId')" @change="setValue(a.id, 'supervisorId', ($event.target as HTMLSelectElement).value)">
               <option v-if="!a.supervisorId" value="">Selecione…</option>
               <option v-for="s in supervisors.data.value" :key="s.id" :value="s.id">{{ s.fullName }}</option>
             </select>

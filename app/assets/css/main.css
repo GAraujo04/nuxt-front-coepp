@@ -168,6 +168,27 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /*
+ * Celular: o Safari do iOS dá zoom na página ao focar um campo com fonte
+ * menor que 16px — e quase todos os campos aqui usam text-sm (14px). Fora
+ * de qualquer @layer de propósito: CSS sem camada vence os utilitários do
+ * Tailwind (que ficam em @layer utilities), então isto se sobrepõe ao
+ * text-sm só abaixo de sm, sem mexer em cada componente.
+ */
+@media (max-width: 639px) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Select se dimensiona pela opção mais longa (nome completo de pessoa,
+   "Sala X (Categoria)"…) e estourava a largura da tela no celular. */
+select {
+  max-width: 100%;
+}
+
+/*
  * Foco visível padrão (WCAG 2.4.7 + 1.4.11 não-textual, mín. 3:1 contra o
  * fundo adjacente) — rede de segurança para qualquer elemento que não
  * defina o próprio estado de foco. Não afeta os inputs existentes que já

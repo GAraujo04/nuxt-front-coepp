@@ -37,7 +37,7 @@ async function onSubmit() {
 
 <template>
   <div class="fsa-hero-bg flex min-h-screen items-center justify-center p-4">
-    <div class="w-full max-w-sm rounded-lg border border-border bg-surface p-8 shadow-sm">
+    <div class="w-full max-w-sm rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-8">
       <h1 class="mb-1 text-xl font-semibold text-body">{{ t('app.name') }}</h1>
       <p class="mb-6 text-sm text-muted">{{ t('auth.login') }}</p>
       <form class="space-y-4" novalidate @submit.prevent="onSubmit">

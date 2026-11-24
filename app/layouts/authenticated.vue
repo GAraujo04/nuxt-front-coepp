@@ -53,11 +53,17 @@ async function handleLogout() {
 
 <template>
   <div class="fsa-hero-bg min-h-screen">
-    <header class="sticky top-0 z-10 flex items-center justify-between gap-4 bg-fsa-superficie px-6 py-3 shadow-sm">
+    <!-- Mobile: logo + ações na 1ª linha, navegação na 2ª (order-last +
+         w-full, rolando na horizontal se não couber). A partir de md tudo
+         volta para uma linha só. -->
+    <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-fsa-superficie px-4 py-3 shadow-sm sm:px-6">
       <NuxtLink to="/" class="shrink-0 hover:opacity-80">
-        <img src="/logo-fsa-horizontal.png" :alt="t('app.name')" class="h-8 w-auto">
+        <img src="/logo-fsa-horizontal.png" :alt="t('app.name')" class="h-7 w-auto sm:h-8">
       </NuxtLink>
-      <nav aria-label="Navegação principal" class="flex flex-1 items-center gap-5 text-sm">
+      <nav
+        aria-label="Navegação principal"
+        class="order-last -mx-1 flex w-full items-center gap-5 overflow-x-auto px-1 text-sm whitespace-nowrap md:order-none md:mx-0 md:w-auto md:flex-1 md:px-0"
+      >
         <!-- `custom` + v-slot dá acesso a isActive, igual ao className de
              função do NavLink no React (navLinkClass em AppLayout.tsx) —
              evita depender das classes automáticas router-link-active do
@@ -73,14 +79,16 @@ async function handleLogout() {
           </a>
         </NuxtLink>
       </nav>
-      <div class="flex items-center gap-4 text-sm">
+      <div class="flex min-w-0 items-center gap-3 text-sm sm:gap-4">
         <NotificationBell v-if="showBell" />
         <!-- text-fsa-header-*, não text-muted/text-link/text-body: este
              header usa --fsa-superficie (fixo, claro) como fundo em
              qualquer tema — os tokens reativos ao tema ficam ilegíveis
              aqui quando o app está no modo escuro (ver nota no main.css). -->
-        <span v-if="user" class="text-fsa-header-muted">
-          <span class="text-fsa-header-text">{{ user.fullName }}</span> · {{ ROLE_LABEL[user.role] ?? user.role }}
+        <!-- No celular o nome completo não cabe ao lado do logo: some e fica
+             só o papel; o nome volta a partir de sm. -->
+        <span v-if="user" class="min-w-0 truncate text-fsa-header-muted">
+          <span class="hidden text-fsa-header-text sm:inline">{{ user.fullName }} · </span>{{ ROLE_LABEL[user.role] ?? user.role }}
         </span>
         <!-- Pedido explícito: um botão só (não Portal + Sair separados).
              "Portal" agora FAZ o logout (limpa sessão + POST /auth/logout)
@@ -88,16 +96,16 @@ async function handleLogout() {
              sessão limpa, em vez de simplesmente navegar mantendo a sessão
              atual (que é o que causava o "volta pro painel errado" ao tentar
              logar como outro papel sem sair antes). -->
-        <button type="button" class="font-medium text-fsa-header-link hover:underline" @click="handleLogout">
+        <button type="button" class="shrink-0 font-medium text-fsa-header-link hover:underline" @click="handleLogout">
           Portal
         </button>
       </div>
     </header>
-    <main class="mx-auto max-w-6xl p-6">
+    <main class="mx-auto max-w-6xl p-3 sm:p-6">
       <!-- Conteúdo das telas de trabalho continua em superfície clara —
            legibilidade de tabelas/formulários dependentes de texto denso
            importa mais aqui do que manter o gradiente visível atrás deles. -->
-      <div class="rounded-lg bg-surface p-6 shadow-sm">
+      <div class="rounded-lg bg-surface p-4 shadow-sm sm:p-6">
         <slot />
       </div>
     </main>

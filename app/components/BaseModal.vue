@@ -19,7 +19,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
       role="dialog"
       aria-modal="true"
       :aria-label="title"
-      class="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-surface p-6 shadow-lg"
+      class="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-surface p-4 shadow-lg sm:p-6"
       @click.stop
     >
       <div class="mb-4 flex items-center justify-between gap-4">

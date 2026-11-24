@@ -64,7 +64,7 @@ function onSubmit() {
 
 <template>
   <div class="fsa-hero-bg flex min-h-screen items-center justify-center p-4">
-    <div class="w-full max-w-xl rounded-lg border border-border bg-surface p-8 shadow-sm">
+    <div class="w-full max-w-xl rounded-lg border border-border bg-surface p-5 shadow-sm sm:p-8">
       <template v-if="reg.isSuccess.value">
         <h1 class="mb-2 text-xl font-semibold text-body">Cadastro realizado!</h1>
         <p class="mb-4 text-sm text-muted">

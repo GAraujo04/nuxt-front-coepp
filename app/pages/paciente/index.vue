@@ -48,12 +48,12 @@ function formatDateTimeShort(iso: string) {
         }}
       </div>
       <ul v-else class="space-y-2">
-        <li v-for="(a, i) in portal.data.value.appointments" :key="i" class="flex items-center justify-between rounded-lg border border-border bg-surface p-4 shadow-sm">
-          <div>
+        <li v-for="(a, i) in portal.data.value.appointments" :key="i" class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-surface p-4 shadow-sm">
+          <div class="min-w-0">
             <p class="text-sm font-medium text-body">{{ formatDateTimeFull(a.scheduledAt) }}</p>
             <p class="text-xs text-muted">Estagiário(a): {{ a.internName }}</p>
           </div>
-          <span class="pill" :class="STATUS_PILL[a.status] ?? 'pill-muted'">{{ STATUS_LABEL[a.status] ?? a.status }}</span>
+          <span class="pill shrink-0" :class="STATUS_PILL[a.status] ?? 'pill-muted'">{{ STATUS_LABEL[a.status] ?? a.status }}</span>
         </li>
       </ul>
     </div>

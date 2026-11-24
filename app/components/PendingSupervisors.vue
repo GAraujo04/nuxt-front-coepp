@@ -27,13 +27,13 @@ function linkPicked(patientLinkId: string) {
     </p>
     <ul class="space-y-2">
       <li v-for="p in pending.data.value" :key="p.id" class="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-surface p-3">
-        <div class="text-sm">
-          <p class="font-medium text-body">{{ p.fullName }} <span class="text-muted">({{ p.email }})</span></p>
+        <div class="min-w-0 text-sm">
+          <p class="font-medium break-words text-body">{{ p.fullName }} <span class="break-all text-muted">({{ p.email }})</span></p>
           <p class="text-xs text-muted">Informou: "{{ p.pendingSupervisorName }}"</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex w-full items-center gap-2 sm:w-auto">
           <select
-            class="rounded-md border border-border bg-surface px-2 py-1.5 text-sm text-body focus:border-link focus:outline-none"
+            class="min-w-0 flex-1 rounded-md border border-border bg-surface px-2 py-1.5 text-sm text-body focus:border-link focus:outline-none"
             :value="picked[p.id] ?? ''"
             @change="picked[p.id] = ($event.target as HTMLSelectElement).value"
           >

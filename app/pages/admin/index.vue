@@ -88,7 +88,7 @@ function onSubmit() {
       <div>
         <h1 class="mb-1 text-lg font-semibold text-body">Cadastrar supervisor</h1>
         <p class="mb-4 text-sm text-muted">Pacientes e alunos se cadastram pelos links públicos.</p>
-        <form class="max-w-xl space-y-4 rounded-lg border border-border bg-surface p-6 shadow-sm" @submit.prevent="onSubmit">
+        <form class="max-w-xl space-y-4 rounded-lg border border-border bg-surface p-4 shadow-sm sm:p-6" @submit.prevent="onSubmit">
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="block text-sm">
               <span class="mb-1 block font-medium text-body">Nome completo</span>

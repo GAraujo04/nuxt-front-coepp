@@ -28,15 +28,15 @@ const { t } = useI18n();
 
 <template>
   <div class="fsa-hero-bg min-h-screen">
-    <header class="flex items-center gap-3 bg-fsa-superficie px-6 py-4">
+    <header class="flex items-center gap-3 bg-fsa-superficie px-4 py-4 sm:px-6">
       <img src="/logo-fsa.png" :alt="t('portal.logoAlt')" class="h-12 w-auto">
     </header>
 
-    <main class="mx-auto max-w-5xl px-6 py-16 text-center">
+    <main class="mx-auto max-w-5xl px-4 py-10 text-center sm:px-6 sm:py-16">
       <h1 class="fsa-title text-4xl sm:text-5xl">{{ t('portal.title') }}</h1>
       <p class="mt-3 text-base text-fsa-texto-claro">{{ t('portal.subtitle') }}</p>
 
-      <div class="mt-16 grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="mt-10 grid grid-cols-1 sm:mt-16 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Cards ficam direto sobre o gradiente (sem moldura/fundo de card) —
              título + botão, igual à referência visual do Portal FSA.
              .fsa-hero-bg já garante contraste do texto branco em qualquer

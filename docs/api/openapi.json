@@ -1773,6 +1773,17 @@
             "title": "Internname",
             "type": "string"
           },
+          "roomName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roomname"
+          },
           "scheduledAt": {
             "title": "Scheduledat",
             "type": "string"
